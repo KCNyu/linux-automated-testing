@@ -56,7 +56,9 @@ sub process_line {
 
         }
         print_result( $result, $test, $reason );
-        $content = "";
+        if ( index( $test, "1.global_main_test" ) eq -1 ) {
+            $content = "";
+        }
     }
     elsif (
            $line =~ m/^#\s*\[\d+\]\s+.*?\[(PASS|UNSUPPORTED|FAIL|UNRESOLVED)\]$/
@@ -170,8 +172,8 @@ sub print_result {
     );
 
     # Return early if $test contains "1.global_main_test"
-    return if index($test, "1.global_main_test") != -1;
-    
+    return if index( $test, "1.global_main_test" ) != -1;
+
     foreach my $entry (@$results) {
         if ( $entry->{"test"} eq $test ) {
             $result_hash{"test"} .= ".new";
@@ -183,6 +185,20 @@ sub print_result {
 }
 
 sub analyze_result {
+    my $pre_name = @$results[0]->{"test"};
+    $pre_name =~ s/=[[:digit:]]//;
+
+    my $pre_category = ( split /\./, $pre_name )[0];
+
+    if ( $lava_status eq 0 ) {
+        my $command = "lava-test-set start $pre_category";
+        system($command);
+    }
+    else {
+        my $command = "echo \"<LAVA_SIGNAL_TESTSET START $pre_category>\"";
+        system($command);
+    }
+
     foreach my $res (@$results) {
         my $test   = $res->{"test"};
         my $result = $res->{"result"};
@@ -190,6 +206,29 @@ sub analyze_result {
 
         $test =~ s/=[[:digit:]]//;
         chomp($reason);
+
+        my $category = ( split /\./, $test )[0];
+        if ( $category ne $pre_category ) {
+            if ( $lava_status eq 0 ) {
+                my $command = "lava-test-set stop $pre_category";
+                system($command);
+
+                $command = "lava-test-set start $category";
+                system($command);
+
+                $pre_category = $category;
+            }
+            else {
+                my $command =
+                  "echo \"<LAVA_SIGNAL_TESTSET STOP $pre_category>\"";
+                system($command);
+
+                $command = "echo \"<LAVA_SIGNAL_TESTSET START $category>\"";
+                system($command);
+
+                $pre_category = $category;
+            }
+        }
 
         if ( $lava_status eq 0 ) {
             if ( $result eq "pass" ) {
@@ -204,7 +243,10 @@ sub analyze_result {
                 system($command);
             }
             elsif ( $result eq "fail" ) {
-                my $print_reason_command = "echo \"$reason\"";
+
+                # my $print_reason_command = "echo \"$reason\"";
+                my $print_reason_command =
+                  "lava-test-case $test --shell echo \"$reason\"";
                 system($print_reason_command);
 
                 my $command = "lava-test-case $test --result \"fail\"";
@@ -237,6 +279,15 @@ sub analyze_result {
                 system($command);
             }
         }
+    }
+
+    if ( $lava_status eq 0 ) {
+        my $command = "lava-test-set stop $pre_category";
+        system($command);
+    }
+    else {
+        my $command = "echo \"<LAVA_SIGNAL_TESTSET STOP $pre_category>\"";
+        system($command);
     }
 }
 
