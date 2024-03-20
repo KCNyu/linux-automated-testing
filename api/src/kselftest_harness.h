@@ -149,6 +149,14 @@ void __constructor__test_global_metadata(const char *module_name,
 	fprintf(TH_LOG_STREAM, "# %s:%d:%s:" fmt "\n", __FILE__, __LINE__,     \
 		_metadata->name, ##__VA_ARGS__)
 
+#define __LOG(fmt, ...) fprintf(TH_LOG_STREAM, fmt, ##__VA_ARGS__)
+
+// 分割线
+#define __SPLIT_LINE                                                           \
+	do {                                                                   \
+		__LOG("--------------------------------------------------"     \
+		      "----------------\n");                                   \
+	} while (0)
 /**
  * SKIP(statement, fmt, ...)
  *
@@ -736,59 +744,66 @@ void __constructor__test_global_metadata(const char *module_name,
 
 #define is_signed_type(var) (!!(((__typeof__(var))(-1)) < (__typeof__(var))1))
 
-#define __EXPECT(_expected, _expected_str, _seen, _seen_str, _t, _assert)          \
-	do {                                                                       \
-		/* Avoid multiple evaluation of the cases */                       \
-		__typeof__(_expected) __exp = (_expected);                         \
-		__typeof__(_seen) __seen = (_seen);                                \
-		if (_assert)                                                       \
-			__INC_STEP(_metadata);                                     \
-		if (!(__exp _t __seen)) {                                          \
-			/* Report with actual signedness to avoid weird output. */ \
-			switch (is_signed_type(__exp) * 2 +                        \
-				is_signed_type(__seen)) {                          \
-			case 0: {                                                  \
-				unsigned long long __exp_print =                   \
-					(uintptr_t)__exp;                          \
-				unsigned long long __seen_print =                  \
-					(uintptr_t)__seen;                         \
-				__TH_LOG("Expected %s (%llu) %s %s (%llu)",        \
-					 _expected_str, __exp_print, #_t,          \
-					 _seen_str, __seen_print);                 \
-				break;                                             \
-			}                                                          \
-			case 1: {                                                  \
-				unsigned long long __exp_print =                   \
-					(uintptr_t)__exp;                          \
-				long long __seen_print = (intptr_t)__seen;         \
-				__TH_LOG("Expected %s (%llu) %s %s (%lld)",        \
-					 _expected_str, __exp_print, #_t,          \
-					 _seen_str, __seen_print);                 \
-				break;                                             \
-			}                                                          \
-			case 2: {                                                  \
-				long long __exp_print = (intptr_t)__exp;           \
-				unsigned long long __seen_print =                  \
-					(uintptr_t)__seen;                         \
-				__TH_LOG("Expected %s (%lld) %s %s (%llu)",        \
-					 _expected_str, __exp_print, #_t,          \
-					 _seen_str, __seen_print);                 \
-				break;                                             \
-			}                                                          \
-			case 3: {                                                  \
-				long long __exp_print = (intptr_t)__exp;           \
-				long long __seen_print = (intptr_t)__seen;         \
-				__TH_LOG("Expected %s (%lld) %s %s (%lld)",        \
-					 _expected_str, __exp_print, #_t,          \
-					 _seen_str, __seen_print);                 \
-				break;                                             \
-			}                                                          \
-			}                                                          \
-			_metadata->passed = 0;                                     \
-			/* Ensure the optional handler is triggered */             \
-			_metadata->trigger = 1;                                    \
-		}                                                                  \
-	} while (0);                                                               \
+#define __EXPECT(_expected, _expected_str, _seen, _seen_str, _t, _assert)      \
+	do {                                                                   \
+		__typeof__(_expected) __exp = (_expected);                     \
+		__typeof__(_seen) __seen = (_seen);                            \
+		if (_assert)                                                   \
+			__INC_STEP(_metadata);                                 \
+		if (!(__exp _t __seen)) {                                      \
+			__SPLIT_LINE;                                          \
+			__LOG("EXPECTATION FAILED at %s:%d || %s %s %s\n",     \
+			      __FILE__, __LINE__, _expected_str, #_t,          \
+			      _seen_str);                                      \
+			__LOG("data:\n");                                      \
+			switch (is_signed_type(__exp) * 2 +                    \
+				is_signed_type(__seen)) {                      \
+			case 0: {                                              \
+				unsigned long long __exp_print =               \
+					(uintptr_t)__exp;                      \
+				unsigned long long __seen_print =              \
+					(uintptr_t)__seen;                     \
+				__LOG("        expected: %s (%llu)\n",         \
+				      _expected_str, __exp_print);             \
+				__LOG("        seen: %s (%llu)\n", _seen_str,  \
+				      __seen_print);                           \
+				break;                                         \
+			}                                                      \
+			case 1: {                                              \
+				unsigned long long __exp_print =               \
+					(uintptr_t)__exp;                      \
+				long long __seen_print = (intptr_t)__seen;     \
+				__LOG("        expected: %s (%llu)\n",         \
+				      _expected_str, __exp_print);             \
+				__LOG("        seen: %s (%lld)\n", _seen_str,  \
+				      __seen_print);                           \
+				break;                                         \
+			}                                                      \
+			case 2: {                                              \
+				long long __exp_print = (intptr_t)__exp;       \
+				unsigned long long __seen_print =              \
+					(uintptr_t)__seen;                     \
+				__LOG("        expected: %s (%lld)\n",         \
+				      _expected_str, __exp_print);             \
+				__LOG("        seen: %s (%llu)\n", _seen_str,  \
+				      __seen_print);                           \
+				break;                                         \
+			}                                                      \
+			case 3: {                                              \
+				long long __exp_print = (intptr_t)__exp;       \
+				long long __seen_print = (intptr_t)__seen;     \
+				__LOG("        expected: %s (%lld)\n",         \
+				      _expected_str, __exp_print);             \
+				__LOG("        seen: %s (%lld)\n", _seen_str,  \
+				      __seen_print);                           \
+				break;                                         \
+			}                                                      \
+			}                                                      \
+			__SPLIT_LINE;                                          \
+			_metadata->passed = 0;                                 \
+			_metadata->trigger = 1;                                \
+		}                                                              \
+	} while (0);                                                           \
 	OPTIONAL_HANDLER(_assert)
 
 #define __EXPECT_STR(_expected, _seen, _t, _assert)                            \

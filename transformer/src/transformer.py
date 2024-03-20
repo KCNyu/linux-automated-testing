@@ -2,6 +2,11 @@ from preprocessor import CodePreprocessor
 from runner import CoccinelleRunner
 from tqdm import tqdm
 import os
+import signal
+
+
+def handle_timeout(signum, frame):
+    raise TimeoutError
 
 
 class TransformerFilePath:
@@ -71,10 +76,13 @@ class TransformerIMPL:
             lines = file.readlines()
 
         new_lines = []
+        main_test = False
         for line in lines:
-            if "argc" in line:
+            if line.strip().startswith("TEST("):
+                main_test = True
+            if main_test and "argc" in line:
                 line = line.replace("argc", "__test_global_metadata->argc")
-            if "argv" in line:
+            if main_test and "argv" in line:
                 line = line.replace("argv", "__test_global_metadata->argv")
             new_lines.append(line)
 
@@ -98,7 +106,7 @@ class TransformerIMPL:
                 under_test = True
                 new_lines.append(line)
             else:
-                if line.startswith("printf"):
+                if line.strip().startswith("printf"):
                     if under_test:
                         line = line.replace("printf", "TH_LOG")
                     else:
@@ -189,9 +197,28 @@ class Transformer:
         functions = transformer.transfrom_impl.retun_execution(
             path, in_place, output_file
         )
+<<<<<<< HEAD
         desc = "Transforming " + path.split("/")[-1]
         for function, args in tqdm(functions, desc=desc):
             function(*args)
+=======
+
+        signal.signal(signal.SIGALRM, handle_timeout)
+        signal.alarm(15)
+
+        try:
+            functions = transformer.transfrom_impl.retun_execution(
+                path, in_place, output_file
+            )
+            desc = "Transforming " + path.split("/")[-1]
+            for function, args in tqdm(functions, desc=desc):
+                function(*args)
+            signal.alarm(0)
+        except TimeoutError:
+            print("Transforme Failed!")
+            os.system(f"mv {bak_file} {path}")
+            return
+>>>>>>> c5485bf5aedd26ff8bbb0f7aa805e56a53a67144
 
         if not in_place:
             os.system(f"mv {path} {output_file}")
