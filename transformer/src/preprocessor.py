@@ -1,6 +1,7 @@
 import os
 import re
 
+
 class CodePreprocessor:
     def __init__(self, filename, output_filename=None):
         self.filename = filename

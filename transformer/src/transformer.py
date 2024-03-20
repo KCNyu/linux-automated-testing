@@ -1,7 +1,7 @@
-import shutil
-from code_preprocessor import CodePreprocessor
-from coccinelle_runner import CoccinelleRunner
+from transformer.src.preprocessor import CodePreprocessor
+from transformer.src.runner import CoccinelleRunner
 import os
+
 
 class TransformerFilePath:
     def __init__(self):
@@ -62,6 +62,7 @@ class Transformer:
         else:
             with open(output_file, "w") as file:
                 file.writelines(new_lines)
+
     def __update_metadata(
         self, file_path: str, in_place=True, output_file=None
     ) -> None:
@@ -84,54 +85,58 @@ class Transformer:
                 file.writelines(new_lines)
 
     def __update_print_expression(
-            self, file_path: str, in_place=True, output_file=None
-        ) -> None:
-            with open(file_path, "r") as file:
-                lines = file.readlines()
+        self, file_path: str, in_place=True, output_file=None
+    ) -> None:
+        with open(file_path, "r") as file:
+            lines = file.readlines()
 
-            new_lines = []
-            under_test = False
-            for line in lines:
-                if line.strip().find("TEST(") != -1:
-                    under_test = True
-                    new_lines.append(line)
-                else:
-                    if line.startswith("printf"):
-                        if under_test:
-                            line = line.replace("printf", "TH_LOG")
-                        else:
-                            line = line.replace("printf", "ksft_print_msg")
-                    new_lines.append(line)
-
-            if in_place:
-                with open(file_path, "w") as file:
-                    file.writelines(new_lines)
+        new_lines = []
+        under_test = False
+        for line in lines:
+            if line.strip().find("TEST(") != -1:
+                under_test = True
+                new_lines.append(line)
             else:
-                with open(output_file, "w") as file:
-                    file.writelines(new_lines)
+                if line.startswith("printf"):
+                    if under_test:
+                        line = line.replace("printf", "TH_LOG")
+                    else:
+                        line = line.replace("printf", "ksft_print_msg")
+                new_lines.append(line)
 
-    def __reset_kselftest_path(self, path: str, in_place=True, output_file=None) -> None:
+        if in_place:
+            with open(file_path, "w") as file:
+                file.writelines(new_lines)
+        else:
+            with open(output_file, "w") as file:
+                file.writelines(new_lines)
+
+    def __reset_kselftest_path(
+        self, path: str, in_place=True, output_file=None
+    ) -> None:
         # CodePreprocessor.add_braces(path)
         CodePreprocessor.reset_kselftest_path(
             path, self.file_path.coccinelle_kselftest_header_path
         )
 
     def __reset_header_path(self, path: str, in_place=True, output_file=None) -> None:
-        CoccinelleRunner.run(
-            path, self.file_path.coccinelle_kselftest_header_path
-        )
+        CoccinelleRunner.run(path, self.file_path.coccinelle_kselftest_header_path)
 
     def __reset_test_main(self, path: str, in_place=True, output_file=None) -> None:
         CoccinelleRunner.run(path, self.file_path.coccinelle_kselftest_main_path)
         self.__update_test_main(path)
 
-    def __reset_print_expression(self, path: str, in_place=True, output_file=None) -> None:
+    def __reset_print_expression(
+        self, path: str, in_place=True, output_file=None
+    ) -> None:
         # CoccinelleRunner.run(
         #     path, self.file_path.coccinelle_kselftest_print_path
         # )
         self.__update_print_expression(path)
 
-    def __reset_assert_expression(self, path: str, in_place=True, output_file=None) -> None:
+    def __reset_assert_expression(
+        self, path: str, in_place=True, output_file=None
+    ) -> None:
         CoccinelleRunner.run(path, self.file_path.coccinelle_kselftest_if_path)
         self.__update_assert_expression(path)
 
@@ -140,7 +145,7 @@ class Transformer:
         #     path, self.file_path.coccinelle_kselftest_metadata_path
         # )
         self.__update_metadata(path)
-        
+
     @staticmethod
     def transform(path: str, in_place=True, output_file=None) -> None:
         if not path.endswith(".c"):
