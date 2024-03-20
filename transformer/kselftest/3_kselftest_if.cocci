@@ -1,4 +1,6 @@
-#include "kselftest/0_kselftest_header.cocci"
+@ haskselftest @
+@@
+#include "../kselftest_harness.h"
 
 /* following if statements with return/exit are replaced by ASSERT_* */
 

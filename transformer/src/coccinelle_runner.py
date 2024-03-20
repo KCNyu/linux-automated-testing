@@ -23,9 +23,9 @@ class CoccinelleRunner:
         devnull = open(os.devnull, "w")
         try:
             subprocess.run(command, check=True, stdout=devnull, stderr=devnull)
-            print(
-                f"Transformation {'complete' if in_place else 'written to ' + output_file}."
-            )
+            # print(
+            #     f"Transformation for {self.cocci_file} {'complete' if in_place else 'written to ' + output_file}."
+            # )
         except subprocess.CalledProcessError as e:
             print(f"Error running Coccinelle: {e}")
 

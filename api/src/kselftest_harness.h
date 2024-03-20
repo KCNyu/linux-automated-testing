@@ -714,7 +714,9 @@ void __constructor__test_global_metadata(const char *module_name,
  */
 #define EXPECT_STRNE(expected, seen) __EXPECT_STR(expected, seen, !=, 0)
 
+#ifndef ARRAY_SIZE
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
+#endif
 
 /* Support an optional handler after and ASSERT_* or EXPECT_*.  The approach is
  * not thread-safe, but it should be fine in most sane test scenarios.
@@ -1199,7 +1201,6 @@ static void test_harness_list_tests(void)
 static int test_harness_argv_check(int argc, char **argv)
 {
 	int opt;
-	int i = 0;
 	while ((opt = getopt(argc, argv, "hlF:f:V:v:t:T:r:")) != -1) {
 		switch (opt) {
 		case 'f':

@@ -3,7 +3,6 @@ from code_preprocessor import CodePreprocessor
 from coccinelle_runner import CoccinelleRunner
 import os
 
-
 class TransformerFilePath:
     def __init__(self):
         self.coccinelle_kselftest_header_path = "./kselftest/0_kselftest_header.cocci"
@@ -63,9 +62,89 @@ class Transformer:
         else:
             with open(output_file, "w") as file:
                 file.writelines(new_lines)
+    def __update_metadata(
+        self, file_path: str, in_place=True, output_file=None
+    ) -> None:
+        with open(file_path, "r") as file:
+            lines = file.readlines()
 
+        new_lines = []
+        for line in lines:
+            if "argc" in line:
+                line = line.replace("argc", "__test_global_metadata->argc")
+            if "argv" in line:
+                line = line.replace("argv", "__test_global_metadata->argv")
+            new_lines.append(line)
+
+        if in_place:
+            with open(file_path, "w") as file:
+                file.writelines(new_lines)
+        else:
+            with open(output_file, "w") as file:
+                file.writelines(new_lines)
+
+    def __update_print_expression(
+            self, file_path: str, in_place=True, output_file=None
+        ) -> None:
+            with open(file_path, "r") as file:
+                lines = file.readlines()
+
+            new_lines = []
+            under_test = False
+            for line in lines:
+                if line.strip().find("TEST(") != -1:
+                    under_test = True
+                    new_lines.append(line)
+                else:
+                    if line.startswith("printf"):
+                        if under_test:
+                            line = line.replace("printf", "TH_LOG")
+                        else:
+                            line = line.replace("printf", "ksft_print_msg")
+                    new_lines.append(line)
+
+            if in_place:
+                with open(file_path, "w") as file:
+                    file.writelines(new_lines)
+            else:
+                with open(output_file, "w") as file:
+                    file.writelines(new_lines)
+
+    def __reset_kselftest_path(self, path: str, in_place=True, output_file=None) -> None:
+        # CodePreprocessor.add_braces(path)
+        CodePreprocessor.reset_kselftest_path(
+            path, self.file_path.coccinelle_kselftest_header_path
+        )
+
+    def __reset_header_path(self, path: str, in_place=True, output_file=None) -> None:
+        CoccinelleRunner.run(
+            path, self.file_path.coccinelle_kselftest_header_path
+        )
+
+    def __reset_test_main(self, path: str, in_place=True, output_file=None) -> None:
+        CoccinelleRunner.run(path, self.file_path.coccinelle_kselftest_main_path)
+        self.__update_test_main(path)
+
+    def __reset_print_expression(self, path: str, in_place=True, output_file=None) -> None:
+        # CoccinelleRunner.run(
+        #     path, self.file_path.coccinelle_kselftest_print_path
+        # )
+        self.__update_print_expression(path)
+
+    def __reset_assert_expression(self, path: str, in_place=True, output_file=None) -> None:
+        CoccinelleRunner.run(path, self.file_path.coccinelle_kselftest_if_path)
+        self.__update_assert_expression(path)
+
+    def __reset_metadata(self, path: str, in_place=True, output_file=None) -> None:
+        # CoccinelleRunner.run(
+        #     path, self.file_path.coccinelle_kselftest_metadata_path
+        # )
+        self.__update_metadata(path)
+        
     @staticmethod
     def transform(path: str, in_place=True, output_file=None) -> None:
+        if not path.endswith(".c"):
+            return
         transformer = Transformer()
         bak_file = path + ".bak"
         os.system(f"cp {path} {bak_file}")
@@ -74,38 +153,27 @@ class Transformer:
             output_file = path.split(".c")[0] + "_transformed.c"
 
         # step 1: add braces to if statements and reset kselftest path
-        # CodePreprocessor.add_braces(path)
-        CodePreprocessor.reset_kselftest_path(
-            path, transformer.file_path.coccinelle_kselftest_header_path
-        )
+        transformer.__reset_kselftest_path(path, in_place, output_file)
 
         # step 2: run coccinelle to make sure the kselftest.h is included and add it if not
-        CoccinelleRunner.run(
-            path, transformer.file_path.coccinelle_kselftest_header_path
-        )
+        transformer.__reset_header_path(path, in_place, output_file)
 
         # step 3: run coccinelle to add the main test function
-        CoccinelleRunner.run(path, transformer.file_path.coccinelle_kselftest_main_path)
-        transformer.__update_test_main(path)
+        transformer.__reset_test_main(path, in_place, output_file)
 
         # step 4: run coccinelle to replace the print function
-        CoccinelleRunner.run(
-            path, transformer.file_path.coccinelle_kselftest_print_path
-        )
+        transformer.__reset_print_expression(path, in_place, output_file)
 
         # step 5: run coccinelle to update the if statements
-        CoccinelleRunner.run(path, transformer.file_path.coccinelle_kselftest_if_path)
-        transformer.__update_assert_expression(path)
+        transformer.__reset_assert_expression(path, in_place, output_file)
 
         # step 6: run coccinelle to add the metadata
-        CoccinelleRunner.run(
-            path, transformer.file_path.coccinelle_kselftest_metadata_path
-        )
+        transformer.__reset_metadata(path, in_place, output_file)
 
         if not in_place:
             os.system(f"mv {path} {output_file}")
             os.system(f"mv {bak_file} {path}")
-            os.system(f"diff {path} {output_file}")
+            os.system(f"diff --color=always {path} {output_file}")
         else:
-            os.system(f"diff {path} {bak_file}")
+            os.system(f"diff --color=always {bak_file} {path}")
             os.system(f"rm {bak_file}")
