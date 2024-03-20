@@ -197,11 +197,6 @@ class Transformer:
         functions = transformer.transfrom_impl.retun_execution(
             path, in_place, output_file
         )
-<<<<<<< HEAD
-        desc = "Transforming " + path.split("/")[-1]
-        for function, args in tqdm(functions, desc=desc):
-            function(*args)
-=======
 
         signal.signal(signal.SIGALRM, handle_timeout)
         signal.alarm(15)
@@ -218,7 +213,6 @@ class Transformer:
             print("Transforme Failed!")
             os.system(f"mv {bak_file} {path}")
             return
->>>>>>> c5485bf5aedd26ff8bbb0f7aa805e56a53a67144
 
         if not in_place:
             os.system(f"mv {path} {output_file}")
