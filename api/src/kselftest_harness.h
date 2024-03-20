@@ -138,24 +138,24 @@ void __constructor__test_global_metadata(const char *module_name,
  * and calling `abort(3)`, the test process call `_exit(2)` with the assert
  * number as argument, which is then printed by the parent process.
  */
-#define TH_LOG(fmt, ...)                                                       \
-	do {                                                                   \
-		if (TH_LOG_ENABLED)                                            \
-			__TH_LOG(fmt, ##__VA_ARGS__);                          \
+#define TH_LOG(fmt, ...)                              \
+	do {                                          \
+		if (TH_LOG_ENABLED)                   \
+			__TH_LOG(fmt, ##__VA_ARGS__); \
 	} while (0)
 
 /* Unconditional logger for internal use. */
-#define __TH_LOG(fmt, ...)                                                     \
-	fprintf(TH_LOG_STREAM, "# %s:%d:%s:" fmt "\n", __FILE__, __LINE__,     \
+#define __TH_LOG(fmt, ...)                                                 \
+	fprintf(TH_LOG_STREAM, "# %s:%d:%s:" fmt "\n", __FILE__, __LINE__, \
 		_metadata->name, ##__VA_ARGS__)
 
 #define __LOG(fmt, ...) fprintf(TH_LOG_STREAM, fmt, ##__VA_ARGS__)
 
 // 分割线
-#define __SPLIT_LINE                                                           \
-	do {                                                                   \
-		__LOG("--------------------------------------------------"     \
-		      "----------------\n");                                   \
+#define __SPLIT_LINE                                                       \
+	do {                                                               \
+		__LOG("--------------------------------------------------" \
+		      "----------------\n");                               \
 	} while (0)
 /**
  * SKIP(statement, fmt, ...)
@@ -167,19 +167,19 @@ void __constructor__test_global_metadata(const char *module_name,
  * This forces a "pass" after reporting why something is being skipped
  * and runs "statement", which is usually "return" or "goto skip".
  */
-#define SKIP(statement, fmt, ...)                                              \
-	do {                                                                   \
-		snprintf(_metadata->results->reason,                           \
-			 sizeof(_metadata->results->reason), fmt,              \
-			 ##__VA_ARGS__);                                       \
-		if (TH_LOG_ENABLED) {                                          \
-			fprintf(TH_LOG_STREAM, "#      SKIP      %s\n",        \
-				_metadata->results->reason);                   \
-		}                                                              \
-		_metadata->passed = 1;                                         \
-		_metadata->skip = 1;                                           \
-		_metadata->trigger = 0;                                        \
-		statement;                                                     \
+#define SKIP(statement, fmt, ...)                                       \
+	do {                                                            \
+		snprintf(_metadata->results->reason,                    \
+			 sizeof(_metadata->results->reason), fmt,       \
+			 ##__VA_ARGS__);                                \
+		if (TH_LOG_ENABLED) {                                   \
+			fprintf(TH_LOG_STREAM, "#      SKIP      %s\n", \
+				_metadata->results->reason);            \
+		}                                                       \
+		_metadata->passed = 1;                                  \
+		_metadata->skip = 1;                                    \
+		_metadata->trigger = 0;                                 \
+		statement;                                              \
 	} while (0)
 
 /**
@@ -275,16 +275,16 @@ void __constructor__test_global_metadata(const char *module_name,
  * Defines the data provided to TEST_F()-defined tests as *self*.  It should be
  * populated and cleaned up using FIXTURE_SETUP() and FIXTURE_TEARDOWN().
  */
-#define FIXTURE(fixture_name)                                                  \
-	FIXTURE_VARIANT(fixture_name);                                         \
-	static struct __fixture_metadata _##fixture_name##_fixture_object = {  \
-		.name = #fixture_name,                                         \
-	};                                                                     \
-	static void __attribute__((constructor))                               \
-	_register_##fixture_name##_data(void)                                  \
-	{                                                                      \
-		__register_fixture(&_##fixture_name##_fixture_object);         \
-	}                                                                      \
+#define FIXTURE(fixture_name)                                                 \
+	FIXTURE_VARIANT(fixture_name);                                        \
+	static struct __fixture_metadata _##fixture_name##_fixture_object = { \
+		.name = #fixture_name,                                        \
+	};                                                                    \
+	static void __attribute__((constructor))                              \
+	_register_##fixture_name##_data(void)                                 \
+	{                                                                     \
+		__register_fixture(&_##fixture_name##_fixture_object);        \
+	}                                                                     \
 	FIXTURE_DATA(fixture_name)
 
 /**
@@ -306,11 +306,11 @@ void __constructor__test_global_metadata(const char *module_name,
  *
  * A bare "return;" statement may be used to return early.
  */
-#define FIXTURE_SETUP(fixture_name)                                            \
-	void fixture_name##_setup(                                             \
-		struct __test_metadata __attribute__((unused)) * _metadata,    \
-		FIXTURE_DATA(fixture_name) __attribute__((unused)) * self,     \
-		const FIXTURE_VARIANT(fixture_name) __attribute__((unused)) *  \
+#define FIXTURE_SETUP(fixture_name)                                           \
+	void fixture_name##_setup(                                            \
+		struct __test_metadata __attribute__((unused)) * _metadata,   \
+		FIXTURE_DATA(fixture_name) __attribute__((unused)) * self,    \
+		const FIXTURE_VARIANT(fixture_name) __attribute__((unused)) * \
 			variant)
 
 /**
@@ -329,9 +329,9 @@ void __constructor__test_global_metadata(const char *module_name,
  *
  * A bare "return;" statement may be used to return early.
  */
-#define FIXTURE_TEARDOWN(fixture_name)                                         \
-	void fixture_name##_teardown(                                          \
-		struct __test_metadata __attribute__((unused)) * _metadata,    \
+#define FIXTURE_TEARDOWN(fixture_name)                                      \
+	void fixture_name##_teardown(                                       \
+		struct __test_metadata __attribute__((unused)) * _metadata, \
 		FIXTURE_DATA(fixture_name) __attribute__((unused)) * self)
 
 /**
@@ -371,22 +371,22 @@ void __constructor__test_global_metadata(const char *module_name,
  * TEST_F() as *variant*. Tests of each fixture will be run once for each
  * variant.
  */
-#define FIXTURE_VARIANT_ADD(fixture_name, variant_name)                        \
-	extern FIXTURE_VARIANT(fixture_name)                                   \
-		_##fixture_name##_##variant_name##_variant;                    \
-	static struct __fixture_variant_metadata                               \
-		_##fixture_name##_##variant_name##_object = {                  \
-			.name = #variant_name,                                 \
-			.data = &_##fixture_name##_##variant_name##_variant    \
-		};                                                             \
-	static void __attribute__((constructor))                               \
-	_register_##fixture_name##_##variant_name(void)                        \
-	{                                                                      \
-		__register_fixture_variant(                                    \
-			&_##fixture_name##_fixture_object,                     \
-			&_##fixture_name##_##variant_name##_object);           \
-	}                                                                      \
-	FIXTURE_VARIANT(fixture_name)                                          \
+#define FIXTURE_VARIANT_ADD(fixture_name, variant_name)                     \
+	extern FIXTURE_VARIANT(fixture_name)                                \
+		_##fixture_name##_##variant_name##_variant;                 \
+	static struct __fixture_variant_metadata                            \
+		_##fixture_name##_##variant_name##_object = {               \
+			.name = #variant_name,                              \
+			.data = &_##fixture_name##_##variant_name##_variant \
+		};                                                          \
+	static void __attribute__((constructor))                            \
+	_register_##fixture_name##_##variant_name(void)                     \
+	{                                                                   \
+		__register_fixture_variant(                                 \
+			&_##fixture_name##_fixture_object,                  \
+			&_##fixture_name##_##variant_name##_object);        \
+	}                                                                   \
+	FIXTURE_VARIANT(fixture_name)                                       \
 	_##fixture_name##_##variant_name##_variant =
 
 /**
@@ -407,13 +407,13 @@ void __constructor__test_global_metadata(const char *module_name,
  * Warning: use of ASSERT_* here will skip TEARDOWN.
  */
 /* TODO(wad) register fixtures on dedicated test lists. */
-#define TEST_F(fixture_name, test_name)                                        \
+#define TEST_F(fixture_name, test_name) \
 	__TEST_F_IMPL(fixture_name, test_name, -1, TEST_TIMEOUT_DEFAULT)
 
-#define TEST_F_SIGNAL(fixture_name, test_name, signal)                         \
+#define TEST_F_SIGNAL(fixture_name, test_name, signal) \
 	__TEST_F_IMPL(fixture_name, test_name, signal, TEST_TIMEOUT_DEFAULT)
 
-#define TEST_F_TIMEOUT(fixture_name, test_name, timeout)                       \
+#define TEST_F_TIMEOUT(fixture_name, test_name, timeout) \
 	__TEST_F_IMPL(fixture_name, test_name, -1, timeout)
 
 #define __TEST_F_IMPL(fixture_name, test_name, signal, tmout)                    \
@@ -463,29 +463,29 @@ void __constructor__test_global_metadata(const char *module_name,
  *
  * Use once to append a main() to the test file.
  */
-#define TEST_HARNESS_MAIN                                                      \
-	static void __attribute__((constructor))                               \
-	__constructor_order_last(void)                                         \
-	{                                                                      \
-		if (!__constructor_order)                                      \
-			__constructor_order = _CONSTRUCTOR_ORDER_BACKWARD;     \
-	}                                                                      \
-	int main(int argc, char **argv)                                        \
-	{                                                                      \
-		return test_harness_run(argc, argv);                           \
+#define TEST_HARNESS_MAIN                                                  \
+	static void __attribute__((constructor))                           \
+	__constructor_order_last(void)                                     \
+	{                                                                  \
+		if (!__constructor_order)                                  \
+			__constructor_order = _CONSTRUCTOR_ORDER_BACKWARD; \
+	}                                                                  \
+	int main(int argc, char **argv)                                    \
+	{                                                                  \
+		return test_harness_run(argc, argv);                       \
 	}
 
-#define TEST_HARNESS_METADATA_MAIN(module, desc, speed)                        \
-	static void __attribute__((constructor))                               \
-	__constructor_order_last(void)                                         \
-	{                                                                      \
-		if (!__constructor_order)                                      \
-			__constructor_order = _CONSTRUCTOR_ORDER_BACKWARD;     \
-	}                                                                      \
-	int main(int argc, char **argv)                                        \
-	{                                                                      \
-		__constructor__test_global_metadata(module, desc, speed);      \
-		return test_harness_run(argc, argv);                           \
+#define TEST_HARNESS_METADATA_MAIN(module, desc, speed)                    \
+	static void __attribute__((constructor))                           \
+	__constructor_order_last(void)                                     \
+	{                                                                  \
+		if (!__constructor_order)                                  \
+			__constructor_order = _CONSTRUCTOR_ORDER_BACKWARD; \
+	}                                                                  \
+	int main(int argc, char **argv)                                    \
+	{                                                                  \
+		__constructor__test_global_metadata(module, desc, speed);  \
+		return test_harness_run(argc, argv);                       \
 	}
 
 /**
@@ -504,7 +504,7 @@ void __constructor__test_global_metadata(const char *module_name,
  *
  * ASSERT_EQ(expected, measured): expected == measured
  */
-#define ASSERT_EQ(expected, seen)                                              \
+#define ASSERT_EQ(expected, seen) \
 	__EXPECT(expected, #expected, seen, #seen, ==, 1)
 
 /**
@@ -515,7 +515,7 @@ void __constructor__test_global_metadata(const char *module_name,
  *
  * ASSERT_NE(expected, measured): expected != measured
  */
-#define ASSERT_NE(expected, seen)                                              \
+#define ASSERT_NE(expected, seen) \
 	__EXPECT(expected, #expected, seen, #seen, !=, 1)
 
 /**
@@ -526,7 +526,7 @@ void __constructor__test_global_metadata(const char *module_name,
  *
  * ASSERT_LT(expected, measured): expected < measured
  */
-#define ASSERT_LT(expected, seen)                                              \
+#define ASSERT_LT(expected, seen) \
 	__EXPECT(expected, #expected, seen, #seen, <, 1)
 
 /**
@@ -537,7 +537,7 @@ void __constructor__test_global_metadata(const char *module_name,
  *
  * ASSERT_LE(expected, measured): expected <= measured
  */
-#define ASSERT_LE(expected, seen)                                              \
+#define ASSERT_LE(expected, seen) \
 	__EXPECT(expected, #expected, seen, #seen, <=, 1)
 
 /**
@@ -548,7 +548,7 @@ void __constructor__test_global_metadata(const char *module_name,
  *
  * ASSERT_GT(expected, measured): expected > measured
  */
-#define ASSERT_GT(expected, seen)                                              \
+#define ASSERT_GT(expected, seen) \
 	__EXPECT(expected, #expected, seen, #seen, >, 1)
 
 /**
@@ -559,7 +559,7 @@ void __constructor__test_global_metadata(const char *module_name,
  *
  * ASSERT_GE(expected, measured): expected >= measured
  */
-#define ASSERT_GE(expected, seen)                                              \
+#define ASSERT_GE(expected, seen) \
 	__EXPECT(expected, #expected, seen, #seen, >=, 1)
 
 /**
@@ -617,7 +617,7 @@ void __constructor__test_global_metadata(const char *module_name,
  *
  * EXPECT_EQ(expected, measured): expected == measured
  */
-#define EXPECT_EQ(expected, seen)                                              \
+#define EXPECT_EQ(expected, seen) \
 	__EXPECT(expected, #expected, seen, #seen, ==, 0)
 
 /**
@@ -628,7 +628,7 @@ void __constructor__test_global_metadata(const char *module_name,
  *
  * EXPECT_NE(expected, measured): expected != measured
  */
-#define EXPECT_NE(expected, seen)                                              \
+#define EXPECT_NE(expected, seen) \
 	__EXPECT(expected, #expected, seen, #seen, !=, 0)
 
 /**
@@ -639,7 +639,7 @@ void __constructor__test_global_metadata(const char *module_name,
  *
  * EXPECT_LT(expected, measured): expected < measured
  */
-#define EXPECT_LT(expected, seen)                                              \
+#define EXPECT_LT(expected, seen) \
 	__EXPECT(expected, #expected, seen, #seen, <, 0)
 
 /**
@@ -650,7 +650,7 @@ void __constructor__test_global_metadata(const char *module_name,
  *
  * EXPECT_LE(expected, measured): expected <= measured
  */
-#define EXPECT_LE(expected, seen)                                              \
+#define EXPECT_LE(expected, seen) \
 	__EXPECT(expected, #expected, seen, #seen, <=, 0)
 
 /**
@@ -661,7 +661,7 @@ void __constructor__test_global_metadata(const char *module_name,
  *
  * EXPECT_GT(expected, measured): expected > measured
  */
-#define EXPECT_GT(expected, seen)                                              \
+#define EXPECT_GT(expected, seen) \
 	__EXPECT(expected, #expected, seen, #seen, >, 0)
 
 /**
@@ -672,7 +672,7 @@ void __constructor__test_global_metadata(const char *module_name,
  *
  * EXPECT_GE(expected, measured): expected >= measured
  */
-#define EXPECT_GE(expected, seen)                                              \
+#define EXPECT_GE(expected, seen) \
 	__EXPECT(expected, #expected, seen, #seen, >=, 0)
 
 /**
@@ -732,116 +732,116 @@ void __constructor__test_global_metadata(const char *module_name,
  * Using __bail(), which optionally abort()s, is the easiest way to early
  * return while still providing an optional block to the API consumer.
  */
-#define OPTIONAL_HANDLER(_assert)                                              \
-	for (; _metadata->trigger;                                             \
-	     _metadata->trigger =                                              \
+#define OPTIONAL_HANDLER(_assert)  \
+	for (; _metadata->trigger; \
+	     _metadata->trigger =  \
 		     __bail(_assert, _metadata->no_print, _metadata->step))
 
-#define __INC_STEP(_metadata)                                                  \
-	/* Keep "step" below 255 (which is used for "SKIP" reporting). */      \
-	if (_metadata->passed && _metadata->step < 253)                        \
+#define __INC_STEP(_metadata)                                             \
+	/* Keep "step" below 255 (which is used for "SKIP" reporting). */ \
+	if (_metadata->passed && _metadata->step < 253)                   \
 		_metadata->step++;
 
 #define is_signed_type(var) (!!(((__typeof__(var))(-1)) < (__typeof__(var))1))
 
-#define __EXPECT(_expected, _expected_str, _seen, _seen_str, _t, _assert)      \
-	do {                                                                   \
-		__typeof__(_expected) __exp = (_expected);                     \
-		__typeof__(_seen) __seen = (_seen);                            \
-		if (_assert)                                                   \
-			__INC_STEP(_metadata);                                 \
-		if (!(__exp _t __seen)) {                                      \
-			__SPLIT_LINE;                                          \
-			__LOG("EXPECTATION FAILED at %s:%d || %s %s %s\n",     \
-			      __FILE__, __LINE__, _expected_str, #_t,          \
-			      _seen_str);                                      \
-			__LOG("data:\n");                                      \
-			switch (is_signed_type(__exp) * 2 +                    \
-				is_signed_type(__seen)) {                      \
-			case 0: {                                              \
-				unsigned long long __exp_print =               \
-					(uintptr_t)__exp;                      \
-				unsigned long long __seen_print =              \
-					(uintptr_t)__seen;                     \
-				__LOG("        expected: %s (%llu)\n",         \
-				      _expected_str, __exp_print);             \
-				__LOG("        seen: %s (%llu)\n", _seen_str,  \
-				      __seen_print);                           \
-				break;                                         \
-			}                                                      \
-			case 1: {                                              \
-				unsigned long long __exp_print =               \
-					(uintptr_t)__exp;                      \
-				long long __seen_print = (intptr_t)__seen;     \
-				__LOG("        expected: %s (%llu)\n",         \
-				      _expected_str, __exp_print);             \
-				__LOG("        seen: %s (%lld)\n", _seen_str,  \
-				      __seen_print);                           \
-				break;                                         \
-			}                                                      \
-			case 2: {                                              \
-				long long __exp_print = (intptr_t)__exp;       \
-				unsigned long long __seen_print =              \
-					(uintptr_t)__seen;                     \
-				__LOG("        expected: %s (%lld)\n",         \
-				      _expected_str, __exp_print);             \
-				__LOG("        seen: %s (%llu)\n", _seen_str,  \
-				      __seen_print);                           \
-				break;                                         \
-			}                                                      \
-			case 3: {                                              \
-				long long __exp_print = (intptr_t)__exp;       \
-				long long __seen_print = (intptr_t)__seen;     \
-				__LOG("        expected: %s (%lld)\n",         \
-				      _expected_str, __exp_print);             \
-				__LOG("        seen: %s (%lld)\n", _seen_str,  \
-				      __seen_print);                           \
-				break;                                         \
-			}                                                      \
-			}                                                      \
-			__SPLIT_LINE;                                          \
-			_metadata->passed = 0;                                 \
-			_metadata->trigger = 1;                                \
-		}                                                              \
-	} while (0);                                                           \
+#define __EXPECT(_expected, _expected_str, _seen, _seen_str, _t, _assert)     \
+	do {                                                                  \
+		__typeof__(_expected) __exp = (_expected);                    \
+		__typeof__(_seen) __seen = (_seen);                           \
+		if (_assert)                                                  \
+			__INC_STEP(_metadata);                                \
+		if (!(__exp _t __seen)) {                                     \
+			__SPLIT_LINE;                                         \
+			__LOG("EXPECTATION FAILED at %s:%d || %s %s %s\n",    \
+			      __FILE__, __LINE__, _expected_str, #_t,         \
+			      _seen_str);                                     \
+			__LOG("data:\n");                                     \
+			switch (is_signed_type(__exp) * 2 +                   \
+				is_signed_type(__seen)) {                     \
+			case 0: {                                             \
+				unsigned long long __exp_print =              \
+					(uintptr_t)__exp;                     \
+				unsigned long long __seen_print =             \
+					(uintptr_t)__seen;                    \
+				__LOG("        expected: %s (%llu)\n",        \
+				      _expected_str, __exp_print);            \
+				__LOG("        seen: %s (%llu)\n", _seen_str, \
+				      __seen_print);                          \
+				break;                                        \
+			}                                                     \
+			case 1: {                                             \
+				unsigned long long __exp_print =              \
+					(uintptr_t)__exp;                     \
+				long long __seen_print = (intptr_t)__seen;    \
+				__LOG("        expected: %s (%llu)\n",        \
+				      _expected_str, __exp_print);            \
+				__LOG("        seen: %s (%lld)\n", _seen_str, \
+				      __seen_print);                          \
+				break;                                        \
+			}                                                     \
+			case 2: {                                             \
+				long long __exp_print = (intptr_t)__exp;      \
+				unsigned long long __seen_print =             \
+					(uintptr_t)__seen;                    \
+				__LOG("        expected: %s (%lld)\n",        \
+				      _expected_str, __exp_print);            \
+				__LOG("        seen: %s (%llu)\n", _seen_str, \
+				      __seen_print);                          \
+				break;                                        \
+			}                                                     \
+			case 3: {                                             \
+				long long __exp_print = (intptr_t)__exp;      \
+				long long __seen_print = (intptr_t)__seen;    \
+				__LOG("        expected: %s (%lld)\n",        \
+				      _expected_str, __exp_print);            \
+				__LOG("        seen: %s (%lld)\n", _seen_str, \
+				      __seen_print);                          \
+				break;                                        \
+			}                                                     \
+			}                                                     \
+			__SPLIT_LINE;                                         \
+			_metadata->passed = 0;                                \
+			_metadata->trigger = 1;                               \
+		}                                                             \
+	} while (0);                                                          \
 	OPTIONAL_HANDLER(_assert)
 
-#define __EXPECT_STR(_expected, _seen, _t, _assert)                            \
-	do {                                                                   \
-		const char *__exp = (_expected);                               \
-		const char *__seen = (_seen);                                  \
-		if (_assert)                                                   \
-			__INC_STEP(_metadata);                                 \
-		if (!(strcmp(__exp, __seen) _t 0)) {                           \
-			__TH_LOG("Expected '%s' %s '%s'.", __exp, #_t,         \
-				 __seen);                                      \
-			_metadata->passed = 0;                                 \
-			_metadata->trigger = 1;                                \
-		}                                                              \
-	} while (0);                                                           \
+#define __EXPECT_STR(_expected, _seen, _t, _assert)                    \
+	do {                                                           \
+		const char *__exp = (_expected);                       \
+		const char *__seen = (_seen);                          \
+		if (_assert)                                           \
+			__INC_STEP(_metadata);                         \
+		if (!(strcmp(__exp, __seen) _t 0)) {                   \
+			__TH_LOG("Expected '%s' %s '%s'.", __exp, #_t, \
+				 __seen);                              \
+			_metadata->passed = 0;                         \
+			_metadata->trigger = 1;                        \
+		}                                                      \
+	} while (0);                                                   \
 	OPTIONAL_HANDLER(_assert)
 
 /* List helpers */
-#define __LIST_APPEND(head, item)                                              \
-	{                                                                      \
-		/* Circular linked list where only prev is circular. */        \
-		if (head == NULL) {                                            \
-			head = item;                                           \
-			item->next = NULL;                                     \
-			item->prev = item;                                     \
-			return;                                                \
-		}                                                              \
-		if (__constructor_order == _CONSTRUCTOR_ORDER_FORWARD) {       \
-			item->next = NULL;                                     \
-			item->prev = head->prev;                               \
-			item->prev->next = item;                               \
-			head->prev = item;                                     \
-		} else {                                                       \
-			item->next = head;                                     \
-			item->next->prev = item;                               \
-			item->prev = item;                                     \
-			head = item;                                           \
-		}                                                              \
+#define __LIST_APPEND(head, item)                                        \
+	{                                                                \
+		/* Circular linked list where only prev is circular. */  \
+		if (head == NULL) {                                      \
+			head = item;                                     \
+			item->next = NULL;                               \
+			item->prev = item;                               \
+			return;                                          \
+		}                                                        \
+		if (__constructor_order == _CONSTRUCTOR_ORDER_FORWARD) { \
+			item->next = NULL;                               \
+			item->prev = head->prev;                         \
+			item->prev->next = item;                         \
+			head->prev = item;                               \
+		} else {                                                 \
+			item->next = head;                               \
+			item->next->prev = item;                         \
+			item->prev = item;                               \
+			head = item;                                     \
+		}                                                        \
 	}
 
 struct __test_results {
