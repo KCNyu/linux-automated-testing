@@ -1045,7 +1045,27 @@ void init_colors()
 	init_pair(3, COLOR_GREEN, COLOR_BLACK); // Selected items
 	init_pair(4, COLOR_WHITE, COLOR_BLUE); // Current selection "shadow"
 }
+void display_process_select(int current_selection, int current_test,
+			    struct __fixture_metadata *f,
+			    struct __fixture_variant_metadata *v,
+			    struct __test_metadata *t, int row)
+{
+	attroff(COLOR_PAIR(4) | COLOR_PAIR(3) | COLOR_PAIR(2) | A_BOLD |
+		A_DIM); // Turn off all used attributes
+	if (current_test == current_selection) {
+		attron(COLOR_PAIR(4)); // Highlight selected test
+	} else if (t->selected) {
+		attron(COLOR_PAIR(3) |
+		       A_BOLD); // Indicate this test is selected but
+			// not currently highlighted
+	} else {
+		attron(COLOR_PAIR(2)); // Normal unselected test
+	}
 
+	mvprintw(row, 0, "| %-18s | %-23s | %-19s |",
+		 t == f->tests ? f->name : "", v ? v->name : "N/A",
+		 t ? t->name : "N/A");
+}
 void display_and_select_tests()
 {
 	int row, max_y, max_x;
@@ -1059,9 +1079,16 @@ void display_and_select_tests()
 
 	// Count total tests for navigation purposes
 	for (f = __fixture_list; f; f = f->next) {
-		for (v = f->variant, t = f->tests; v || t;
-		     v = v ? v->next : NULL, t = t ? t->next : NULL) {
-			total_tests++;
+		if (f->variant == NULL) {
+			for (t = f->tests; t; t = t->next) {
+				total_tests++;
+			}
+		} else {
+			for (v = f->variant; v; v = v->next) {
+				for (t = f->tests; t; t = t->next) {
+					total_tests++;
+				}
+			}
 		}
 	}
 	do {
@@ -1084,30 +1111,25 @@ void display_and_select_tests()
 		int current_test = 0;
 		// Inside the loop where tests are printed
 		for (f = __fixture_list; f && row < max_y - 1; f = f->next) {
-			for (v = f->variant, t = f->tests;
-			     (v || t) && (row < max_y - 1);
-			     v = v ? v->next : NULL, t = t ? t->next : NULL) {
-				attroff(COLOR_PAIR(4) | COLOR_PAIR(3) |
-					COLOR_PAIR(2) | A_BOLD |
-					A_DIM); // Turn off all used attributes
-				if (current_test == current_selection) {
-					attron(COLOR_PAIR(
-						4)); // Highlight selected test
-				} else if (t->selected) {
-					attron(COLOR_PAIR(3) |
-					       A_BOLD); // Indicate this test is selected but
-						// not currently highlighted
-				} else {
-					attron(COLOR_PAIR(
-						2)); // Normal unselected test
+			if (f->variant == NULL) {
+				for (t = f->tests; t; t = t->next) {
+					display_process_select(
+						current_selection, current_test,
+						f, NULL, t, row);
+					row++;
+					current_test++;
 				}
-
-				mvprintw(row++, 0, "| %-18s | %-23s | %-19s |",
-					 t == f->tests ? f->name : "",
-					 v ? v->name : "N/A",
-					 t ? t->name : "N/A");
-
-				current_test++;
+			} else {
+				for (v = f->variant; v; v = v->next) {
+					for (t = f->tests; t; t = t->next) {
+						display_process_select(
+							current_selection,
+							current_test, f, v, t,
+							row);
+						row++;
+						current_test++;
+					}
+				}
 			}
 		}
 
@@ -1205,7 +1227,7 @@ static void test_harness_list_tests(void)
 		     v = v ? v->next : NULL, t = t ? t->next : NULL) {
 			fprintf(stderr, "| %-18s | %-23s | %-19s |\n",
 				t == f->tests ? f->name : "",
-				v ? v->name : "N/A", t ? t->name : "N/A");
+				v ? v->name : "N/A", t ? t->name : "");
 		}
 
 		print_separator();

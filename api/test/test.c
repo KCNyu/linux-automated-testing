@@ -5,7 +5,8 @@
 #include <unistd.h>
 
 // #include "kselftest_harness.h"
-#include "../../api/kselftest_harness.h"
+#include "../src/kselftest_harness.h"
+// #include "../src/kselftest_harness_latest.h"
 
 FIXTURE(t1)
 {
@@ -13,6 +14,25 @@ FIXTURE(t1)
 	unsigned int page_size;
 	unsigned int page_shift;
 };
+
+// FIXTURE_VARIANT(t1)
+// {
+// 	unsigned int file_version;
+// };
+
+// FIXTURE_VARIANT_ADD(t1, v1)
+// {
+// 	.file_version = 100
+// };
+
+// FIXTURE_VARIANT_ADD(t1, v2)
+// {
+// 	.file_version = 200
+// };
+// FIXTURE_VARIANT_ADD(t1, v3)
+// {
+// 	.file_version = 300
+// };
 
 FIXTURE(t2)
 {
@@ -45,7 +65,7 @@ FIXTURE_TEARDOWN(t1)
 
 FIXTURE_TEARDOWN(t2)
 {
-	TH_LOG("dsaldjsal");
+	TH_LOG("hello");
 	// ASSERT_EQ(0, 0);
 	self->fd = -1;
 
@@ -72,6 +92,7 @@ TEST(hello)
 TEST_F(t1, open_closed)
 {
 	ASSERT_EQ(self->fd, 1);
+	// ASSERT_NE(variant->file_version, 100);
 }
 TEST_F(t1, open_closed_2)
 {
@@ -79,10 +100,14 @@ TEST_F(t1, open_closed_2)
 }
 TEST(main_test)
 {
+	// TH_LOG("%d",__test_global_metadata->argc);
+	// TH_LOG("%s",__test_global_metadata->argv[1]);
+
 	ASSERT_EQ(1, 2)
 	{
 		TH_LOG("Error: couldn't map the space we need for the test\n");
 	}
 }
 
-TEST_HARNESS_METADATA_MAIN("vm", "hello", NORMAL)
+// TEST_HARNESS_METADATA_MAIN("vm", "hello", NORMAL)
+TEST_HARNESS_MAIN
