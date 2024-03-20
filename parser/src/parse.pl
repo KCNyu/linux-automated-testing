@@ -19,9 +19,22 @@ my $id_counter     = 0;
 my $results        = [];
 my $lava_status    = 0;
 
+sub print_help {
+    print <<"END_HELP";
+Usage: perl parse.pl [OPTIONS]
+
+Options:
+  -h, --help        Show this help message
+  -i, --input FILE  Specify input file
+  -j, --save-json   Save results in JSON format
+  -c, --save-csv    Save results in CSV format
+END_HELP
+}
+
 sub parse {
-    my $filename = $ARGV[0]
-      or die "Please provide a filename as an argument.\n";
+
+    my ($filename) = @_;
+
     open( my $file, "<", $filename ) or die "Can't open $filename: $!\n";
 
     while ( $line = <$file> ) {
@@ -291,8 +304,120 @@ sub analyze_result {
     }
 }
 
+sub escape_json_string {
+    my ($str) = @_;
+    $str =~ s/\\/\\\\/g;
+    $str =~ s/"/\\"/g;
+    $str =~ s/\n/\\n/g;
+    $str =~ s/\r/\\r/g;
+    $str =~ s/\t/\\t/g;
+    return $str;
+}
+
+sub save_results_to_json {
+    my ($results) = @_;
+
+    my $filename = "results.json";
+    open( my $fh, '>', $filename )
+      or die "Could not open file '$filename' $!";
+
+    print $fh "[\n";
+
+    my $first_item = 1;
+    foreach my $item (@$results) {
+        print $fh "," unless $first_item;
+        $first_item = 0;
+
+        my @pairs;
+        foreach my $key ( keys %$item ) {
+            my $value = $item->{$key};
+
+            if ( $value =~ /^\d+$/ ) {
+                push @pairs,
+                  sprintf( '"%s":%s', escape_json_string($key), $value );
+            }
+            else {
+                push @pairs,
+                  sprintf( '"%s":"%s"',
+                    escape_json_string($key),
+                    escape_json_string($value) );
+            }
+        }
+
+        print $fh "    {" . join( ", ", @pairs ) . "}\n";
+    }
+
+    print $fh "]\n";
+
+    close $fh;
+    print "Results saved to JSON file'$filename'.\n";
+}
+
+sub save_results_to_csv {
+    my ($results) = @_;
+
+    my $filename = "results.csv";
+
+    open( my $fh, '>', $filename ) or die "Could not open file '$filename' $!";
+
+    my @headers = qw(test result);
+
+    # print $fh join(",", @headers) . "\n";
+
+    foreach my $item (@$results) {
+        my $name   = $item->{test};
+        my $result = $item->{result};
+
+        print $fh "$name $result\n";
+    }
+
+    close $fh;
+    print "Results saved to CSV file '$filename'.\n";
+}
+
 # ==============================================================================
 
-check_lava();
-parse();
-analyze_result();
+sub main() {
+    if ( scalar(@ARGV) == 0 ) {
+        print_help();
+        exit;
+    }
+    my $input_file = '';
+    my $save_json  = 0;
+    my $save_csv   = 0;
+    for ( my $i = 0 ; $i <= $#ARGV ; $i++ ) {
+        my $arg = $ARGV[$i];
+        if ( $arg eq '-h' || $arg eq '--help' ) {
+            print_help();
+            exit;
+        }
+        elsif ( $arg eq '-i' ) {
+            $i++;
+            $input_file = $ARGV[$i] if defined $ARGV[$i];
+        }
+        elsif ( $arg =~ /^--input=(.+)$/ ) {
+            $input_file = $1;
+        }
+        elsif ( $arg eq '-j' || $arg eq '--save-json' ) {
+            $save_json = 1;
+        }
+        elsif ( $arg eq '-c' || $arg eq '--save-csv' ) {
+            $save_csv = 1;
+        }
+    }
+
+    die "An input file is required. Use -i or --input option.\n"
+      unless $input_file;
+    check_lava();
+    parse($input_file);
+    analyze_result();
+
+    if ($save_json) {
+        save_results_to_json($results);
+    }
+    if ($save_csv) {
+        save_results_to_csv($results);
+    }
+}
+
+main();
