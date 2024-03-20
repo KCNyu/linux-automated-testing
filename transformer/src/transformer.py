@@ -1,6 +1,12 @@
-from transformer.src.preprocessor import CodePreprocessor
-from transformer.src.runner import CoccinelleRunner
+from preprocessor import CodePreprocessor
+from runner import CoccinelleRunner
+from tqdm import tqdm
 import os
+import signal
+
+
+def handle_timeout(signum, frame):
+    raise TimeoutError
 
 
 class TransformerFilePath:
@@ -16,10 +22,10 @@ class TransformerFilePath:
         self.kseltest_harness_path = "../api/kselftest_harness.h"
 
 
-class Transformer:
-    def __init__(self):
+class TransformerIMPL:
+    def __init__(self, file_path: TransformerFilePath):
         """Initializes the Transformer."""
-        self.file_path = TransformerFilePath()
+        self.file_path = file_path
 
     def __update_test_main(
         self, file_path: str, in_place=True, output_file=None
@@ -70,10 +76,13 @@ class Transformer:
             lines = file.readlines()
 
         new_lines = []
+        main_test = False
         for line in lines:
-            if "argc" in line:
+            if line.strip().startswith("TEST("):
+                main_test = True
+            if main_test and "argc" in line:
                 line = line.replace("argc", "__test_global_metadata->argc")
-            if "argv" in line:
+            if main_test and "argv" in line:
                 line = line.replace("argv", "__test_global_metadata->argv")
             new_lines.append(line)
 
@@ -97,7 +106,7 @@ class Transformer:
                 under_test = True
                 new_lines.append(line)
             else:
-                if line.startswith("printf"):
+                if line.strip().startswith("printf"):
                     if under_test:
                         line = line.replace("printf", "TH_LOG")
                     else:
@@ -146,6 +155,34 @@ class Transformer:
         # )
         self.__update_metadata(path)
 
+    def retun_execution(self, path: str, in_place=True, output_file=None):
+        return [
+            # step 1: add braces to if statements and reset kselftest path
+            (self.__reset_kselftest_path, (path, in_place, output_file)),
+            # step 2: run coccinelle to make sure the kselftest.h is included and add it if not
+            (self.__reset_header_path, (path, in_place, output_file)),
+            # step 3: run coccinelle to add the main test function
+            (self.__reset_test_main, (path, in_place, output_file)),
+            (
+                # step 4: run coccinelle to replace the print function
+                self.__reset_print_expression,
+                (path, in_place, output_file),
+            ),
+            (
+                # step 5: run coccinelle to update the if statements
+                self.__reset_assert_expression,
+                (path, in_place, output_file),
+            ),
+            # step 6: run coccinelle to add the metadata
+            (self.__reset_metadata, (path, in_place, output_file)),
+        ]
+
+
+class Transformer:
+    def __init__(self):
+        """Initializes the Transformer."""
+        self.transfrom_impl = TransformerIMPL(TransformerFilePath())
+
     @staticmethod
     def transform(path: str, in_place=True, output_file=None) -> None:
         if not path.endswith(".c"):
@@ -157,23 +194,25 @@ class Transformer:
         if not in_place:
             output_file = path.split(".c")[0] + "_transformed.c"
 
-        # step 1: add braces to if statements and reset kselftest path
-        transformer.__reset_kselftest_path(path, in_place, output_file)
+        functions = transformer.transfrom_impl.retun_execution(
+            path, in_place, output_file
+        )
 
-        # step 2: run coccinelle to make sure the kselftest.h is included and add it if not
-        transformer.__reset_header_path(path, in_place, output_file)
+        signal.signal(signal.SIGALRM, handle_timeout)
+        signal.alarm(15)
 
-        # step 3: run coccinelle to add the main test function
-        transformer.__reset_test_main(path, in_place, output_file)
-
-        # step 4: run coccinelle to replace the print function
-        transformer.__reset_print_expression(path, in_place, output_file)
-
-        # step 5: run coccinelle to update the if statements
-        transformer.__reset_assert_expression(path, in_place, output_file)
-
-        # step 6: run coccinelle to add the metadata
-        transformer.__reset_metadata(path, in_place, output_file)
+        try:
+            functions = transformer.transfrom_impl.retun_execution(
+                path, in_place, output_file
+            )
+            desc = "Transforming " + path.split("/")[-1]
+            for function, args in tqdm(functions, desc=desc):
+                function(*args)
+            signal.alarm(0)
+        except TimeoutError:
+            print("Transforme Failed!")
+            os.system(f"mv {bak_file} {path}")
+            return
 
         if not in_place:
             os.system(f"mv {path} {output_file}")
