@@ -2,7 +2,7 @@
 @@
 #include "../kselftest_harness.h"
 
-@ print_replace @
+@ print_replace depends on haskselftest @
 expression E;
 expression list Es;
 @@

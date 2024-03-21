@@ -120,6 +120,33 @@ class TransformerIMPL:
             with open(output_file, "w") as file:
                 file.writelines(new_lines)
 
+    def __update_exit_value(
+        self, file_path: str, in_place=True, output_file=None
+    ) -> None:
+        with open(file_path, "r") as file:
+            lines = file.readlines()
+
+        new_lines = []
+        for line in lines:
+            if "exit(0)" in line:
+                line = line.replace("exit(0)", "exit(KSFT_PASS)")
+            if "exit(1)" in line:
+                line = line.replace("exit(1)", "exit(KSFT_FAIL)")
+            if "exit(2)" in line:
+                line = line.replace("exit(2)", "exit(KSFT_XFAIL)")
+            if "exit(3)" in line:
+                line = line.replace("exit(3)", "exit(KSFT_XPASS)")
+            if "exit(4)" in line:
+                line = line.replace("exit(4)", "exit(KSFT_SKIP)")
+            new_lines.append(line)
+
+        if in_place:
+            with open(file_path, "w") as file:
+                file.writelines(new_lines)
+        else:
+            with open(output_file, "w") as file:
+                file.writelines(new_lines)
+
     def __reset_kselftest_path(
         self, path: str, in_place=True, output_file=None
     ) -> None:
@@ -149,6 +176,11 @@ class TransformerIMPL:
         CoccinelleRunner.run(path, self.file_path.coccinelle_kselftest_if_path)
         self.__update_assert_expression(path)
 
+    def __reset_exit_expression(
+        self, path: str, in_place=True, output_file=None
+    ) -> None:
+        self.__update_exit_value(path)
+
     def __reset_metadata(self, path: str, in_place=True, output_file=None) -> None:
         # CoccinelleRunner.run(
         #     path, self.file_path.coccinelle_kselftest_metadata_path
@@ -173,7 +205,9 @@ class TransformerIMPL:
                 self.__reset_assert_expression,
                 (path, in_place, output_file),
             ),
-            # step 6: run coccinelle to add the metadata
+            # step 6: replace the exit value with actual kselftest exit codes
+            (self.__reset_exit_expression, (path, in_place, output_file)),
+            # step 7: run coccinelle to add the metadata
             (self.__reset_metadata, (path, in_place, output_file)),
         ]
 
