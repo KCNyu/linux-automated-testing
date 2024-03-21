@@ -16,4 +16,4 @@ The `transformer` addresses historical inconsistencies in test output formats by
 
 ### [Parser](./parser/README.md)
 
-The `parser` component is designed to parse the results logs from Kselftest runs, preparing them for submission to CI systems. It compares three versions of the Parser, highlighting the current implementation's efficiency and optimization in parsing and submitting test results. Additional details can be found in the [Parser README].
+The `parser` component is designed to parse the results logs from Kselftest runs, preparing them for submission to CI systems. It compares three versions of the Parser, highlighting the current implementation's efficiency and optimization in parsing and submitting test results.
