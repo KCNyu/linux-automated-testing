@@ -1,7 +1,8 @@
 # linux-automated-testing
 
 > 🌐 **Languages:** [English](./README.md) | [Русский](./README_ru.md)
-> 
+
+![framework](./framework.png) 
 This project focuses on enhancing the Linux kernel selftest framework by introducing significant improvements across its `api`, `transformer`, and `parser` components. These enhancements aim to streamline the process of writing, managing, and interpreting kernel self-tests, making the framework more efficient and user-friendly.
 
 ## Project Components
