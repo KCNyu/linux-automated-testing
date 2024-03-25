@@ -20,6 +20,7 @@ class CoccinelleRunner:
         else:
             command.extend(["-o", output_file])
 
+        command.extend(["--use-cache"])
         devnull = open(os.devnull, "w")
         try:
             subprocess.run(command, check=True, stdout=devnull, stderr=devnull)

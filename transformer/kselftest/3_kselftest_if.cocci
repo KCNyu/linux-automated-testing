@@ -101,7 +101,7 @@ expression ret != 0;
 TEST(...){
 <+...
 - if(!E)
-+ ASSERT_NE(E, 0);
++ ASSERT_FALSE(E);
 {
 ...
 (
@@ -123,7 +123,7 @@ expression ret != 0;
 TEST(...){
 <+...
 - if(E)
-+ ASSERT_EQ(E, 0);
++ ASSERT_TRUE(E);
 {
 ...
 (

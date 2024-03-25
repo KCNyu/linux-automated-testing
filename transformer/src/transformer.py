@@ -3,6 +3,9 @@ from runner import CoccinelleRunner
 from tqdm import tqdm
 import os
 import signal
+import re
+
+TIMEOUT = 60
 
 
 def handle_timeout(signum, frame):
@@ -39,6 +42,7 @@ class TransformerIMPL:
                 new_lines.append(line[3:])
             elif line.strip().startswith("TEST("):
                 new_lines.append(line.replace("TEST(", "TEST(main_test"))
+                in_test = True
             else:
                 new_lines.append(line)
 
@@ -56,11 +60,16 @@ class TransformerIMPL:
             lines = file.readlines()
 
         new_lines = []
+        in_test = False
         for line in lines:
+            if line.strip().startswith("TEST("):
+                in_test = True
             if line.strip().find("ASSERT_") != -1 and line.strip().find("; {") != -1:
                 new_lines.append(line.replace("; {", " {"))
             else:
                 new_lines.append(line)
+            if in_test and "return" in line:
+                new_lines.append(re.sub(r"return\s+(.*?);", r"exit(\1);", line))
 
         if in_place:
             with open(file_path, "w") as file:
@@ -233,7 +242,7 @@ class Transformer:
         )
 
         signal.signal(signal.SIGALRM, handle_timeout)
-        signal.alarm(15)
+        signal.alarm(TIMEOUT)
 
         try:
             functions = transformer.transfrom_impl.retun_execution(
@@ -255,3 +264,6 @@ class Transformer:
         else:
             os.system(f"diff --color=always {bak_file} {path}")
             os.system(f"rm {bak_file}")
+
+        os.system(f"rm {path}.ast_raw")
+        os.system(f"rm {path}.depend_raw")
