@@ -58,7 +58,12 @@ sub process_line {
         $test = process_test( $test, $testdir, $number );
         my $result = process_result( $not, $skip );
         if ( $result eq "fail" or $result eq "skip" ) {
-            $reason = $content;
+            if ($content =~ /(TAP version.*)/s) {
+                $reason = $1;
+            }
+            else{
+                $reason = $content;
+            }
             if (@sub_test_array) {
                 $reason .= "\n# The following sub-tests did not succeed\n";
                 foreach my $sub_test (@sub_test_array) {
@@ -81,7 +86,12 @@ sub process_line {
         my $test   = process_sub_test_name( $line, $testdir, $content );
 
         if ( $result ne "pass" ) {
-            $reason = $content;
+            if ($content =~ /(TAP version.*)/s) {
+                $reason = $1;
+            }
+            else{
+                $reason = $content;
+            }
             push @sub_test_array, $test;
         }
 
