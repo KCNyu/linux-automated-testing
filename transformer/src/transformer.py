@@ -64,12 +64,13 @@ class TransformerIMPL:
         for line in lines:
             if line.strip().startswith("TEST("):
                 in_test = True
+            if in_test and "return" in line:
+                new_lines.append(re.sub(r"return\s+(.*?);", r"exit(\1);", line))
+                continue
             if line.strip().find("ASSERT_") != -1 and line.strip().find("; {") != -1:
                 new_lines.append(line.replace("; {", " {"))
             else:
                 new_lines.append(line)
-            if in_test and "return" in line:
-                new_lines.append(re.sub(r"return\s+(.*?);", r"exit(\1);", line))
 
         if in_place:
             with open(file_path, "w") as file:
