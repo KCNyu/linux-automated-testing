@@ -18,3 +18,17 @@ The `transformer` addresses historical inconsistencies in test output formats by
 ### [Parser](./parser/README.md)
 
 The `parser` component is designed to parse the results logs from Kselftest runs, preparing them for submission to CI systems. It compares three versions of the Parser, highlighting the current implementation's efficiency and optimization in parsing and submitting test results.
+
+## Getting Started
+
+The script `runner.sh` is designed to automate the running of specific TARGET subsystem tests within the Linux kernel self-tests, both before and after applying transformations with the Transformer tool. 
+### Running Tests
+
+To use `runner.sh` for running tests on a specified TARGET, follow these steps:
+
+```bash
+# Run tests for the 'tmpfs' TARGET
+./runner.sh tmpfs
+```
+
+This command executes the self-tests for the `tmpfs` subsystem. It will automatically perform the tests before the transformation, apply the transformation, and then re-run the tests after the transformation, facilitating a direct comparison of the results.

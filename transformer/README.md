@@ -26,8 +26,20 @@ The transformation process involves several key steps, leveraging Coccinelle sem
 
 ## Getting Started
 
-To use the Transformer tools, follow these steps:
+- **Prepare Environment:** Ensure all necessary dependencies are installed on your system. This includes having Coccinelle, which is crucial for the semantic patching process.
+  
+- **Navigate to Transformer:** Change your current working directory to the `transformer` directory. This step is imperative as the transformation script needs to be executed from within this directory to correctly access and apply the transformation rules and dependencies:
 
-- Ensure you have the necessary dependencies installed, including Coccinelle.
-- Navigate to the `transformer` directory and run the transformation script on your target test files.
-- Verify the conversion by reviewing the transformed test files and running them within the kselftest framework.
+  ```bash
+  cd path/to/transformer
+  ```
+
+- **Execute Transformation:** Once in the transformer directory, initiate the transformation process by running the transformation script on your target test files. It is important to maintain the directory context to ensure paths and dependencies are correctly resolved:
+
+  ```bash
+  python3 src/main.py <file>
+  ```
+
+  Replace `<file>` with the path to the test file you wish to transform. Note: Ensure the path is relative to the transformer directory or provide an absolute path to the test file.
+
+- **Verify Conversion:** After running the script, review the transformed test files to ensure the conversion aligns with the expected outcomes. Subsequently, execute the modified tests within the kselftest framework to confirm their functionality and adherence to the standardized format.
