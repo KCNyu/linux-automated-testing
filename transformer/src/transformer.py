@@ -5,7 +5,7 @@ import os
 import signal
 import re
 
-TIMEOUT = 60
+TIMEOUT = 120
 
 
 def handle_timeout(signum, frame):
@@ -266,5 +266,5 @@ class Transformer:
             os.system(f"diff --color=always {bak_file} {path}")
             os.system(f"rm {bak_file}")
 
-        os.system(f"rm {path}.ast_raw")
-        os.system(f"rm {path}.depend_raw")
+        os.system(f"rm {path}.ast_raw >/dev/null 2>&1")
+        os.system(f"rm {path}.depend_raw >/dev/null 2>&1")

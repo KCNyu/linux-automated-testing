@@ -79,6 +79,7 @@ struct __test_description {
 struct __test_global_metadata {
 	int argc;
 	char **argv;
+	int exit_status;
 
 	struct __test_description d;
 	Speed s;
@@ -92,6 +93,7 @@ void __constructor__test_global_metadata(const char *module_name,
 	if (__test_global_metadata != NULL) {
 		__test_global_metadata->argc = 0;
 		__test_global_metadata->argv = NULL;
+		__test_global_metadata->exit_status = 0;
 		strncpy(__test_global_metadata->d.module, module_name,
 			MAX_LEN - 1);
 		__test_global_metadata->d.module[MAX_LEN - 1] = '\0';
@@ -1005,6 +1007,7 @@ void __wait_for_test(struct __test_metadata *t)
 			/* Other failure, assume step report. */
 			default:
 				t->passed = 0;
+				__test_global_metadata->exit_status = WEXITSTATUS(status);
 				fprintf(TH_LOG_STREAM,
 					"# %s: Test failed at step #%d\n",
 					t->name, WEXITSTATUS(status));
@@ -1478,6 +1481,10 @@ static int test_harness_run(int argc, char **argv)
 
 	ksft_print_msg("%s: %u / %u tests passed.\n", ret ? "FAILED" : "PASSED",
 		       pass_count, count);
+	if (ksft_test_num() == 1) {
+		ksft_print_cnts();
+		exit(__test_global_metadata->exit_status);
+	}
 	ksft_exit(ret == 0);
 
 	/* unreachable */
