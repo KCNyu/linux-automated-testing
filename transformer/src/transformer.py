@@ -66,13 +66,21 @@ class TransformerIMPL:
                 in_test = True
             if in_test:
                 pattern = r'(?<![":\'/])\breturn\b(?![":\'/])'
-                replacement = lambda match: re.sub(r'return\s+(.*?);', r'exit(\1);', match.group(0))
+                replacement = lambda match: re.sub(
+                    r"return\s+(.*?);", r"exit(\1);", match.group(0)
+                )
                 new_line = re.sub(pattern, replacement, line, flags=re.DOTALL)
-                if (new_line != line):
+                if new_line != line:
                     new_lines.append(new_line)
                     continue
             if line.strip().find("ASSERT_") != -1 and line.strip().find("; {") != -1:
                 new_lines.append(line.replace("; {", " {"))
+            elif (
+                line.strip().find("ASSERT_") != -1 and line.strip().find("; // {") != -1
+            ):
+                new_lines.append(line.replace("; // {", " {"))
+            elif line.strip().startswith("// }"):
+                new_lines.append(line.replace("// }", "}"))
             else:
                 new_lines.append(line)
 

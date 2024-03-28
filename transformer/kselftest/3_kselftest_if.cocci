@@ -135,3 +135,123 @@ TEST(...){
 }
 ...+>
 }
+
+/////////////////////////////////////////
+
+@ if_eq_without_braces depends on haskselftest @
+expression E1, E2;
+expression ret != 0;
+@@
+TEST(...){
+<+...
+- if(E1 == E2)
++ ASSERT_NE(E1, E2); // {
+(
+- return ret;
+| 
+- exit(ret);
+)
++ exit(ret);
++ // }
+...+>
+}
+
+/////////////////////////////////////////
+
+@ if_ne_without_braces depends on haskselftest @
+expression E1, E2;
+expression ret != 0;
+@@
+TEST(...){
+<+...
+- if(E1 != E2)
++ ASSERT_EQ(E1, E2); // {
+(
+- return ret;
+| 
+- exit(ret);
+)
++ exit(ret);
++ // }
+...+>
+}
+
+/////////////////////////////////////////
+
+@ if_le_without_braces depends on haskselftest @
+expression E1, E2;
+expression ret != 0;
+@@
+TEST(...){
+<+...
+- if(E1 < E2)
++ ASSERT_GE(E1, E2); // {
+(
+- return ret;
+| 
+- exit(ret);
+)
++ exit(ret);
++ // }
+...+>
+}
+
+/////////////////////////////////////////
+
+@ if_ge_without_braces depends on haskselftest @
+expression E1, E2;
+expression ret != 0;
+@@
+TEST(...){
+<+...
+- if(E1 > E2)
++ ASSERT_LE(E1, E2); // {
+(
+- return ret;
+| 
+- exit(ret);
+)
++ exit(ret);
++ // }
+...+>
+}
+
+/////////////////////////////////////////
+
+@ ingle_if_ne_without_braces depends on haskselftest @
+expression E;
+expression ret != 0;
+@@
+TEST(...){
+<+...
+- if(!E)
++ ASSERT_TRUE(E); // {
+(
+- return ret;
+| 
+- exit(ret);
+)
++ exit(ret);
++ // }
+...+>
+}
+
+/////////////////////////////////////////
+
+@ ingle_if_eq_without_braces depends on haskselftest @
+expression E;
+expression ret != 0;
+@@
+TEST(...){
+<+...
+- if(E)
++ ASSERT_FALSE(E); // {
+(
+- return ret;
+| 
+- exit(ret);
+)
++ exit(ret);
++ // }
+...+>
+}
