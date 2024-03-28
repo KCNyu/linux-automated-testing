@@ -103,7 +103,9 @@ void __constructor__test_global_metadata(const char *module_name,
 	}
 }
 
+#ifndef TEST_TIMEOUT_DEFAULT
 #define TEST_TIMEOUT_DEFAULT 30
+#endif
 
 /* Utilities exposed to the test definitions */
 #ifndef TH_LOG_STREAM
@@ -985,6 +987,7 @@ void __wait_for_test(struct __test_metadata *t)
 
 	if (t->timed_out) {
 		t->passed = 0;
+		__test_global_metadata->exit_status = KSFT_FAIL;
 		fprintf(TH_LOG_STREAM, "# %s: Test terminated by timeout\n",
 			t->name);
 	} else if (WIFEXITED(status)) {
