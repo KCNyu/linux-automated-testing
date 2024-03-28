@@ -37,21 +37,52 @@ class TransformerIMPL:
             lines = file.readlines()
 
         new_lines = []
-        for line in lines:
+        in_test = False
+        brace_count = 0
+        last_return_index = None  # Keep track of the last "return <expression>;" line within a TEST function
+
+        for i, line in enumerate(lines):
             if line.strip().startswith("// TEST_HARNESS_MAIN"):
                 new_lines.append(line[3:])
-            elif line.strip().startswith("TEST("):
+                continue
+            if line.strip().startswith("TEST("):
                 new_lines.append(line.replace("TEST(", "TEST(main_test"))
                 in_test = True
-            else:
-                new_lines.append(line)
+                continue
 
-        if in_place:
-            with open(file_path, "w") as file:
-                file.writelines(new_lines)
-        else:
-            with open(output_file, "w") as file:
-                file.writelines(new_lines)
+            if in_test:
+                brace_count += line.count("{")
+                brace_count -= line.count("}")
+
+                # Use regular expression to find "return <expression>;"
+                if re.search(r"\breturn\s+.*?;", line):
+                    last_return_index = len(
+                        new_lines
+                    )  # Update the index with current line in new_lines
+
+                if brace_count == 0:
+                    # Exiting TEST function
+                    in_test = False
+                    if last_return_index is not None:
+                        # Extract the return expression and replace it
+                        return_match = re.search(
+                            r"\breturn\s+(.*?);", new_lines[last_return_index]
+                        )
+                        if return_match:
+                            return_expression = return_match.group(1)
+                            # Replace the last "return <expression>;" with "exit(<expression>);"
+                            new_lines[last_return_index] = re.sub(
+                                r"\breturn\s+.*?;",
+                                f"exit({return_expression});",
+                                new_lines[last_return_index],
+                            )
+                    last_return_index = None  # Reset for the next TEST function
+            new_lines.append(line)
+
+        # Write to either the original file or a new output file
+        output_path = file_path if in_place else output_file
+        with open(output_path, "w") as file:
+            file.writelines(new_lines)
 
     def __update_assert_expression(
         self, file_path: str, in_place=True, output_file=None
