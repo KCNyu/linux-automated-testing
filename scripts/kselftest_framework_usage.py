@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import sys
 
-colors = ["#aec7e8", "#98df8a", "#ffbb78", "#c5b0d5", "#ff9896"]
+colors = ["#344964", "#B1D9E5", "#ACB2BC", "#F6F6F6", "#475EA5"]
 data = pd.read_csv("test_counts.csv")
 data = data[data["Target"] != "Total"]
 
@@ -37,8 +37,13 @@ usage_counts = usage_counts.reindex(labels)
 
 fig, axs = plt.subplots(1, 2, figsize=(16, 8))
 
-patches, texts, autotexts = axs[1].pie(usage_percentages, labels=usage_percentages.index, autopct='%1.1f%%', startangle=140, colors=colors)
+def custom_autopct(pct):
+    return ('%1.1f%%' % pct) if pct > 0 else ''
+
+patches, texts, autotexts = axs[1].pie(usage_percentages, labels=None, autopct=custom_autopct, startangle=140, colors=colors)
 axs[1].set_title(title_percentage, fontsize=16, fontweight='bold')
+
+axs[0].legend(patches, labels, title="Usage framework\nwithin subsystem", loc="upper right", bbox_to_anchor=(0.97, 0.97))
 
 for text in texts:
     text.set_fontsize(14)
