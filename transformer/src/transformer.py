@@ -128,15 +128,17 @@ class TransformerIMPL:
         with open(file_path, "r") as file:
             lines = file.readlines()
 
+        argc_pattern = re.compile(r"\bargc\b")
+        argv_pattern = re.compile(r"\bargv\b")
+
         new_lines = []
         main_test = False
         for line in lines:
             if line.strip().startswith("TEST("):
                 main_test = True
-            if main_test and "argc" in line:
-                line = line.replace("argc", "__test_global_metadata->argc")
-            if main_test and "argv" in line:
-                line = line.replace("argv", "__test_global_metadata->argv")
+            if main_test:
+                line = argc_pattern.sub("__test_global_metadata->argc", line)
+                line = argv_pattern.sub("__test_global_metadata->argv", line)
             new_lines.append(line)
 
         if in_place:
@@ -218,9 +220,7 @@ class TransformerIMPL:
     def __reset_print_expression(
         self, path: str, in_place=True, output_file=None
     ) -> None:
-        CoccinelleRunner.run(
-            path, self.file_path.coccinelle_kselftest_print_path
-        )
+        CoccinelleRunner.run(path, self.file_path.coccinelle_kselftest_print_path)
         self.__update_print_expression(path)
 
     def __reset_assert_expression(
