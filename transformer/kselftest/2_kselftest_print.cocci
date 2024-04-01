@@ -14,26 +14,26 @@ TEST(...)
 ...+>
 }
 
-@ perror_replace depends on haskselftest @
-expression E;
-expression list Es;
-@@
-TEST(...)
-{
-<+...
-- perror(E, Es);
-+ TH_LOG(E, Es);
-...+>
-}
+// @ perror_replace depends on haskselftest @
+// expression E;
+// expression list Es;
+// @@
+// TEST(...)
+// {
+// <+...
+// - perror(E, Es);
+// + TH_LOG(E, Es);
+// ...+>
+// }
 
 @ fprintf_replace depends on haskselftest @
-expression E;
+expression E = stderr, Er;
 expression list Es;
 @@
 TEST(...)
 {
 <+...
-- fprintf(stderr, E, Es);
-+ TH_LOG(E, Es);
+- fprintf(E, Er, Es);
++ TH_LOG(Er, Es);
 ...+>
 }
