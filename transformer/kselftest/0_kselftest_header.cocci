@@ -9,7 +9,14 @@ int main(...)
     ...
 }
 
-@ add_kselftest_harness depends on !haskselftest && main_exists @
+@ start_exists @
+@@
+void _start(...)
+{
+    ...
+}
+
+@ add_kselftest_harness depends on !haskselftest && (main_exists || start_exists) @
 @@
 #include <...>
 + #include "../kselftest_harness.h"

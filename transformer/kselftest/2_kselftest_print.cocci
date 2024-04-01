@@ -25,3 +25,15 @@ TEST(...)
 + TH_LOG(E, Es);
 ...+>
 }
+
+@ fprintf_replace depends on haskselftest @
+expression E;
+expression list Es;
+@@
+TEST(...)
+{
+<+...
+- fprintf(stderr, E, Es);
++ TH_LOG(E, Es);
+...+>
+}

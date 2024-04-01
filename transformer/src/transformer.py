@@ -218,9 +218,9 @@ class TransformerIMPL:
     def __reset_print_expression(
         self, path: str, in_place=True, output_file=None
     ) -> None:
-        # CoccinelleRunner.run(
-        #     path, self.file_path.coccinelle_kselftest_print_path
-        # )
+        CoccinelleRunner.run(
+            path, self.file_path.coccinelle_kselftest_print_path
+        )
         self.__update_print_expression(path)
 
     def __reset_assert_expression(
@@ -304,9 +304,9 @@ class Transformer:
         if not in_place:
             os.system(f"mv {path} {output_file}")
             os.system(f"mv {bak_file} {path}")
-            os.system(f"diff --color=always {path} {output_file}")
+            os.system(f"diff -u --color=always {path} {output_file}")
         else:
-            os.system(f"diff --color=always {bak_file} {path}")
+            os.system(f"diff -u --color=always {bak_file} {path}")
             os.system(f"rm {bak_file}")
 
         os.system(f"rm {path}.ast_raw >/dev/null 2>&1")
