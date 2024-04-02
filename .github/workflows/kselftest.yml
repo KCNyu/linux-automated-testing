@@ -8,6 +8,8 @@ on:
       - "api/**"
       - "transformer/**"
       - "parser/**"
+      - ".github/workflows/**"
+      - "runner.sh"
 
 jobs:
   kselftest:
