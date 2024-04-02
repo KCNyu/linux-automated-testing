@@ -129,4 +129,4 @@ sudo make -C tools/testing/selftests TARGETS="$1" run_tests | tee "../$LOG_DIR/$
 # Parse logs
 cd ../../parser
 ./src/parse.pl -i "../$WORKSPACE/$LOG_DIR/${1}_before.log"
-./src/parse.pl -i "../$WORKSPACE/$LOG_DIR/${1}_after.log"
+./src/parse.pl -i "../$WORKSPACE/$LOG_DIR/${1}_after.log" -j
