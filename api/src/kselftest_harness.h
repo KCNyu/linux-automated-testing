@@ -756,8 +756,10 @@ void __constructor__test_global_metadata(const char *module_name,
 			__INC_STEP(_metadata);                                \
 		if (!(__exp _t __seen)) {                                     \
 			__SPLIT_LINE;                                         \
-			__LOG("EXPECTATION FAILED at %s:%d || %s %s %s\n",    \
-			      __FILE__, __LINE__, _expected_str, #_t,         \
+			__LOG("EXPECTATION FAILED at %s:%d\n", __FILE__,      \
+			      __LINE__);                                      \
+			__LOG("expression:\n");                               \
+			__LOG("        %s %s %s\n", _expected_str, #_t,       \
 			      _seen_str);                                     \
 			__LOG("data:\n");                                     \
 			switch (is_signed_type(__exp) * 2 +                   \
@@ -1010,7 +1012,8 @@ void __wait_for_test(struct __test_metadata *t)
 			/* Other failure, assume step report. */
 			default:
 				t->passed = 0;
-				__test_global_metadata->exit_status = WEXITSTATUS(status);
+				__test_global_metadata->exit_status =
+					WEXITSTATUS(status);
 				fprintf(TH_LOG_STREAM,
 					"# %s: Test failed at step #%d\n",
 					t->name, WEXITSTATUS(status));
