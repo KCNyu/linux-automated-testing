@@ -40,12 +40,12 @@ jobs:
       - name: Run kselftest ${{ matrix.test }}
         run: ./runner.sh ${{ matrix.test }}
 
+      - name: Parse log files
+        run: ./runner.sh -p ${{ matrix.test }}
+
       - name: Upload Test Results
         uses: actions/upload-artifact@v3
         with:
           name: kselftest-results-${{ matrix.test }}
           path: |
             ${{ github.workspace }}/parser/results.json
-
-      - name: Parse log files
-        run: ./runner.sh -p ${{ matrix.test }}
