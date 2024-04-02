@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        test: [vm, tmpfs, capabilities]
+        test: [vm, tmpfs, capabilities, exec, clone3, membarrier, timers]
 
     steps:
       - uses: actions/checkout@v4

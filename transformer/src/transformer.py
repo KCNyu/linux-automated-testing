@@ -119,9 +119,7 @@ class TransformerIMPL:
                     found = False
                     new_lines.append(line)
                     continue
-            elif (
-                line.strip().find("ASSERT_") != -1
-            ):
+            elif line.strip().find("ASSERT_") != -1:
                 if line.strip().find("; // {") != -1:
                     new_lines.append(line.replace("; // {", " {"))
                 else:
@@ -293,6 +291,12 @@ class Transformer:
         if not path.endswith(".c"):
             return
         transformer = Transformer()
+        with open(path, "r") as file:
+            lines = file.readlines()
+        for line in lines:
+            if "#include" in line and "kselftest_harness.h" in line:
+                print(f"SKIP: {path} already contains kselftest_harness.h")
+                return
         bak_file = path + ".bak"
         os.system(f"cp {path} {bak_file}")
 
