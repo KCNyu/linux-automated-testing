@@ -25,7 +25,7 @@ jobs:
             clone3,
             membarrier,
             timers,
-            filesystem,
+            filesystems,
           ]
 
     steps:
