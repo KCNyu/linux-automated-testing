@@ -41,6 +41,7 @@ jobs:
           key: ${{ runner.os }}-apt-${{ hashFiles('.github/workflows/kselftest.yml') }}
           restore-keys: |
             ${{ runner.os }}-apt-
+        sudo: true
 
       - name: Prepare the system
         run: |
