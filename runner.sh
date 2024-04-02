@@ -72,7 +72,7 @@ copy_specific_file_for_test() {
             echo "Error copying file. Please check the paths and permissions."
             exit 1
         fi
-    elif ["$1" == "vm" ]; then
+    elif [ "$1" == "vm" ]; then
         local vm_dir="$ORIGIN_DIR/tools/testing/selftests/vm"
         local src_file="../$TRANSFORMER_DIR/test/map_hugetlb_with_error.c"
         local dest_file="$vm_dir/map_hugetlb_with_error.c"
