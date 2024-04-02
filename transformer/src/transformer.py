@@ -92,6 +92,7 @@ class TransformerIMPL:
 
         new_lines = []
         in_test = False
+        found = True
         for line in lines:
             if line.strip().startswith("TEST("):
                 in_test = True
@@ -104,12 +105,29 @@ class TransformerIMPL:
                 if new_line != line:
                     new_lines.append(new_line)
                     continue
-            if line.strip().find("ASSERT_") != -1 and line.strip().find("; {") != -1:
-                new_lines.append(line.replace("; {", " {"))
+            if not found:
+                if line.strip().find("; {") != -1:
+                    new_lines.append(line.replace("; {", " {"))
+                elif line.strip().find("; // {") != -1:
+                    new_lines.append(line.replace("; // {", " {"))
+                found = True
+                continue
+            if line.strip().find("ASSERT_") != -1:
+                if line.strip().find("; {") != -1:
+                    new_lines.append(line.replace("; {", " {"))
+                else:
+                    found = False
+                    new_lines.append(line)
+                    continue
             elif (
-                line.strip().find("ASSERT_") != -1 and line.strip().find("; // {") != -1
+                line.strip().find("ASSERT_") != -1
             ):
-                new_lines.append(line.replace("; // {", " {"))
+                if line.strip().find("; // {") != -1:
+                    new_lines.append(line.replace("; // {", " {"))
+                else:
+                    found = False
+                    new_lines.append(line)
+                    continue
             elif line.strip().startswith("// }"):
                 new_lines.append(line.replace("// }", "}"))
             else:
