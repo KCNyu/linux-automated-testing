@@ -96,12 +96,12 @@ if [ "$1" == "-p" ]; then
         exit 1
     fi
     cd parser/
-    if [ ! -d "../$WORKSPACE/$LOG_DIR/${2}_before.log" ]; then
-        echo "Log file for $2_before.log does not exist."
+    if [ ! -f "../$WORKSPACE/$LOG_DIR/${2}_before.log" ]; then
+        echo "Log file for ${2}_before.log does not exist."
         exit 1
     fi
-    if [ ! -d "../$WORKSPACE/$LOG_DIR/${2}_after.log" ]; then
-        echo "Log file for $2_after.log does not exist."
+    if [ ! -f "../$WORKSPACE/$LOG_DIR/${2}_after.log" ]; then
+        echo "Log file for ${2}_after.log does not exist."
         exit 1
     fi
     ./src/parse.pl -i "../$WORKSPACE/$LOG_DIR/${2}_before.log"
