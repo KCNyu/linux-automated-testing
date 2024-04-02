@@ -17,9 +17,16 @@ fi
 download_and_extract_kernel() {
     if [ ! -d "$ORIGIN_DIR" ]; then
         echo "Directory $ORIGIN_DIR does not exist, starting download..."
-        wget https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.10.213.tar.xz
+        wget https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.10.213.tar.xz >/dev/null 2>&1
         mkdir -p "$ORIGIN_DIR"
-        tar -xvf linux-5.10.213.tar.xz -C "$ORIGIN_DIR" --strip-components=1
+        tar -xvf linux-5.10.213.tar.xz -C "$ORIGIN_DIR" --strip-components=1 >/dev/null 2>&1
+
+        if [ $? -eq 0 ]; then
+            echo "Download and extraction successful."
+        else
+            echo "Error downloading and extracting the kernel. Please check the paths and permissions."
+            exit 1
+        fi
     else
         echo "Directory $ORIGIN_DIR already exists, skipping download."
     fi
@@ -65,9 +72,23 @@ copy_specific_file_for_test() {
             echo "Error copying file. Please check the paths and permissions."
             exit 1
         fi
+    elif ["$1" == "vm"]; then
+        local vm_dir="$ORIGIN_DIR/tools/testing/selftests/vm"
+        local src_file="../$TRANSFORMER_DIR/test/map_hugetlb_with_error.c"
+        local dest_file="$vm_dir/map_hugetlb_with_error.c"
+        local final_file="$vm_dir/map_hugetlb.c"
+        echo "Copying specific test file for vm..."
+        # Copy the file
+        if cp "$src_file" "$dest_file"; then
+            # If copy succeeds, rename the file
+            mv "$dest_file" "$final_file"
+            echo "File copied and renamed successfully."
+        else
+            echo "Error copying file. Please check the paths and permissions."
+            exit 1
+        fi
     fi
 }
-
 
 # Main script execution starts here
 
