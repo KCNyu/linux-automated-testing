@@ -19,7 +19,7 @@ jobs:
         test: [vm, tmpfs]
 
     steps:
-      - uses: actions/checkout@latest
+      - uses: actions/checkout@4
 
       - name: Install all dependencies
         run: |
