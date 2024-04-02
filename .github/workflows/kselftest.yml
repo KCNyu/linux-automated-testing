@@ -6,7 +6,7 @@ on:
       - master
 
 jobs:
-  build:
+  kselftest:
     runs-on: ubuntu-latest
 
     steps:
@@ -15,7 +15,7 @@ jobs:
       - name: Install dependencies for kselftest
         run: sudo apt-get install -y libelf-dev libmnl-dev bison flex
 
-      - name: Install dependencies for Transformer
+      - name: Install dependencies for transformer
         run: sudo apt-get install -y python3 python3-pip && pip3 install -r Transformer/requirements.txt
 
       - name: Install coccinelle
