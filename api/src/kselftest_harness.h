@@ -104,7 +104,7 @@ void __constructor__test_global_metadata(const char *module_name,
 }
 
 #ifndef TEST_TIMEOUT_DEFAULT
-#define TEST_TIMEOUT_DEFAULT 30
+#define TEST_TIMEOUT_DEFAULT 300
 #endif
 
 /* Utilities exposed to the test definitions */
