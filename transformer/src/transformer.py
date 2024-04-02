@@ -108,19 +108,16 @@ class TransformerIMPL:
             if not found:
                 if line.strip().find("; {") != -1:
                     new_lines.append(line.replace("; {", " {"))
+                    found = True
+                    continue
                 elif line.strip().find("; // {") != -1:
                     new_lines.append(line.replace("; // {", " {"))
-                found = True
-                continue
+                    found = True
+                    continue
             if line.strip().find("ASSERT_") != -1:
                 if line.strip().find("; {") != -1:
                     new_lines.append(line.replace("; {", " {"))
-                else:
-                    found = False
-                    new_lines.append(line)
-                    continue
-            elif line.strip().find("ASSERT_") != -1:
-                if line.strip().find("; // {") != -1:
+                elif line.strip().find("; // {") != -1:
                     new_lines.append(line.replace("; // {", " {"))
                 else:
                     found = False
