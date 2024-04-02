@@ -24,7 +24,9 @@ jobs:
       - name: Install all dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libelf-dev libmnl-dev bison flex coccinelle python3 python3-pip
+          sudo apt-get install -y libelf-dev libmnl-dev bison flex libhugetlbfs-dev coccinelle python3 python3-pip \
+                                  libaio-dev libcap-dev libcap-ng-dev libelf-dev libfuse-dev libgcc-s1 libhugetlbfs-dev \
+                                  libmnl-dev libmount-dev libnuma-dev libpopt-dev librtmp-dev
           pip3 install -r transformer/requirements.txt
 
       - name: Cache Python dependencies
