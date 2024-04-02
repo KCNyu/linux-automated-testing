@@ -7,12 +7,6 @@ TEST_DIR="linux-5.10.y"
 LOG_DIR="log"
 TRANSFORMER_DIR=transformer
 
-# Ensure a TARGETS argument is provided
-if [ $# -ne 1 ]; then
-    echo "Usage: $0 <TARGETS>"
-    exit 1
-fi
-
 # Function to download and extract Linux kernel if it doesn't exist
 download_and_extract_kernel() {
     if [ ! -d "$ORIGIN_DIR" ]; then
@@ -92,6 +86,32 @@ copy_specific_file_for_test() {
 
 # Main script execution starts here
 
+if [ $# -eq 0 ]; then
+    echo "Usage: $0 <TARGETS> or $0 -p <TARGETS>"
+    exit 1
+fi
+if [ "$1" == "-p" ]; then
+    if [ $# -ne 2 ]; then
+        echo "Usage: $0 -p <TARGETS>"
+        exit 1
+    fi
+    cd parser/
+    if [ ! -d "../$WORKSPACE/$LOG_DIR/${2}_before.log" ]; then
+        echo "Log file for $2_before.log does not exist."
+        exit 1
+    fi
+    if [ ! -d "../$WORKSPACE/$LOG_DIR/${2}_after.log" ]; then
+        echo "Log file for $2_after.log does not exist."
+        exit 1
+    fi
+    ./src/parse.pl -i "../$WORKSPACE/$LOG_DIR/${2}_before.log"
+    echo ""
+    echo "========================Parsing after transformation========================"
+    echo ""
+    ./src/parse.pl -i "../$WORKSPACE/$LOG_DIR/${2}_after.log" -j
+    exit 0
+fi
+
 # Ensure workspace directory exists
 if [ ! -d "$WORKSPACE" ]; then
     mkdir -p "$WORKSPACE"
@@ -129,4 +149,4 @@ sudo make -C tools/testing/selftests TARGETS="$1" run_tests | tee "../$LOG_DIR/$
 # Parse logs
 cd ../../parser
 ./src/parse.pl -i "../$WORKSPACE/$LOG_DIR/${1}_before.log"
-./src/parse.pl -i "../$WORKSPACE/$LOG_DIR/${1}_after.log" -j
+./src/parse.pl -i "../$WORKSPACE/$LOG_DIR/${1}_after.log"

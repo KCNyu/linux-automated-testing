@@ -46,3 +46,6 @@ jobs:
           name: kselftest-results-${{ matrix.test }}
           path: |
             ${{ github.workspace }}/parser/results.json
+
+      - name: Parse log files
+        run: ./runner.sh -p ${{ matrix.test }}
