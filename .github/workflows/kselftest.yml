@@ -1,0 +1,25 @@
+name: Run kselftest subsystem tests
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install dependencies for kselftest
+        run: sudo apt-get install -y libelf-dev libmnl-dev bison flex
+
+      - name: Install dependencies for Transformer
+        run: sudo apt-get install -y python3 python3-pip && pip3 install -r Transformer/requirements.txt
+
+      - name: Install coccinelle
+        run: sudo apt-get install -y coccinelle
+
+      - name: Build kselftest
+        run: ./runner.sh kselftest
