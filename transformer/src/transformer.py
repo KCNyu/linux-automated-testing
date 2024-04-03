@@ -198,17 +198,38 @@ class TransformerIMPL:
             lines = file.readlines()
 
         new_lines = []
+        exit_pattern = re.compile(r"exit\((\d)\)")
+        function_pattern = re.compile(r"ksft_exit_(pass|fail|xfail|xpass|skip)\(\)")
+
+        exit_macros = {
+            "0": "KSFT_PASS",
+            "1": "KSFT_FAIL",
+            "2": "KSFT_XFAIL",
+            "3": "KSFT_XPASS",
+            "4": "KSFT_SKIP",
+        }
+
+        function_macros = {
+            "pass": "KSFT_PASS",
+            "fail": "KSFT_FAIL",
+            "xfail": "KSFT_XFAIL",
+            "xpass": "KSFT_XPASS",
+            "skip": "KSFT_SKIP",
+        }
+
         for line in lines:
-            if "exit(0)" in line:
-                line = line.replace("exit(0)", "exit(KSFT_PASS)")
-            if "exit(1)" in line:
-                line = line.replace("exit(1)", "exit(KSFT_FAIL)")
-            if "exit(2)" in line:
-                line = line.replace("exit(2)", "exit(KSFT_XFAIL)")
-            if "exit(3)" in line:
-                line = line.replace("exit(3)", "exit(KSFT_XPASS)")
-            if "exit(4)" in line:
-                line = line.replace("exit(4)", "exit(KSFT_SKIP)")
+            match_exit = exit_pattern.search(line)
+            if match_exit:
+                exit_code = match_exit.group(1)
+                if exit_code in exit_macros:
+                    line = exit_pattern.sub(f"exit({exit_macros[exit_code]})", line)
+            match_function = function_pattern.search(line)
+            if match_function:
+                function_key = match_function.group(1)
+                if function_key in function_macros:
+                    line = function_pattern.sub(
+                        f"{function_macros[function_key]}", line
+                    )
             new_lines.append(line)
 
         if in_place:
