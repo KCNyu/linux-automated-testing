@@ -169,17 +169,20 @@ class TransformerIMPL:
 
         new_lines = []
         under_test = False
+        regex = r'printf\("([^"\n]*)\\n?"\);'
+
         for line in lines:
-            if line.strip().find("TEST(") != -1:
+            if "TEST(" in line.strip():
                 under_test = True
-                new_lines.append(line)
             else:
-                if line.strip().startswith("printf"):
+                if "printf" in line:
                     if under_test:
-                        line = line.replace("printf", "TH_LOG")
+                        replacement_function = "TH_LOG"
+                        line = re.sub(regex, rf'{replacement_function}("\1");', line)
                     else:
-                        line = line.replace("printf", "ksft_print_msg")
-                new_lines.append(line)
+                        replacement_function = "ksft_print_msg"
+                        line = line.replace("printf", replacement_function)
+            new_lines.append(line)
 
         if in_place:
             with open(file_path, "w") as file:
