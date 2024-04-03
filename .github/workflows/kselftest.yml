@@ -26,11 +26,12 @@ jobs:
             membarrier,
             timers,
             filesystems,
+            efivarfs,
           ]
 
     steps:
       - uses: actions/checkout@v4
-      
+
       # Cache apt packages
       - name: Cache apt packages
         uses: actions/cache@v4
