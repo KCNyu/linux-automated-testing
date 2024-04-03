@@ -175,7 +175,7 @@ class TransformerIMPL:
             if "TEST(" in line.strip():
                 under_test = True
             else:
-                if "printf" in line:
+                if line.strip().startswith("printf"):
                     if under_test:
                         replacement_function = "TH_LOG"
                         line = re.sub(regex, rf'{replacement_function}("\1");', line)
