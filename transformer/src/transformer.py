@@ -164,12 +164,20 @@ class TransformerIMPL:
     def __update_print_expression(
         self, file_path: str, in_place=True, output_file=None
     ) -> None:
+        def replacement(match):
+            string_part = match.group(1)
+            extra_params = match.group(3)
+            if extra_params:
+                return f'{replacement_function}("{string_part}", {extra_params});'
+            else:
+                return f'{replacement_function}("{string_part}");'
+
         with open(file_path, "r") as file:
             lines = file.readlines()
 
         new_lines = []
         under_test = False
-        regex = r'printf\("([^"\n]*)\\n?"\);'
+        regex = r'printf\("((?:[^"\\]|\\.)*?)(\\n)?"(?:,\s*([^;]*))?\);'
 
         for line in lines:
             if "TEST(" in line.strip():
@@ -178,7 +186,7 @@ class TransformerIMPL:
                 if line.strip().startswith("printf"):
                     if under_test:
                         replacement_function = "TH_LOG"
-                        line = re.sub(regex, rf'{replacement_function}("\1");', line)
+                        line = re.sub(regex, replacement, line)
                     else:
                         replacement_function = "ksft_print_msg"
                         line = line.replace("printf", replacement_function)
