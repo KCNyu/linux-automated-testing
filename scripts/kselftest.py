@@ -9,9 +9,9 @@ kselftest_harness_h_count = data["C Files with kselftest_harness.h"].sum()
 main_start_count = data["C Files with main/_start"].sum()
 
 categories = [
-    "Normal Test Files",
-    "Test Files with kselftest.h",
-    "Test Files with kselftest_harness.h",
+    "Normal Test Suites",
+    "Test Suites with kselftest.h",
+    "Test Suites with kselftest_harness.h",
     "Sum of kselftest Files",
 ]
 counts = [
@@ -37,7 +37,7 @@ for i, (category, count) in enumerate(zip(categories, counts)):
     )
 
 axs[0].set_title(
-    "Number of Test Files", fontdict={"fontsize": 14, "fontweight": "bold"}
+    "Number of Test Suites", fontdict={"fontsize": 14, "fontweight": "bold"}
 )
 axs[0].set_ylabel("Counts", fontdict={"fontsize": 12, "fontweight": "bold"})
 axs[0].set_xticks([])
@@ -57,8 +57,8 @@ def custom_autopct(pct):
 
 
 categories_pie = [
-    "Test Files with kselftest.h",
-    "Test Files with kselftest_harness.h",
+    "Test Suites with kselftest.h",
+    "Test Suites with kselftest_harness.h",
     "Others",
 ]
 colors_pie = ["#344964", "#B1D9E5", "#ACB2BC"]
@@ -72,9 +72,8 @@ patches, texts, autotexts = axs[1].pie(
     textprops={"fontsize": 12, "weight": "bold"},
 )
 axs[1].set_title(
-    "Percentage of Test Files", fontdict={"fontsize": 14, "fontweight": "bold"}
+    "Percentage of Test Suites", fontdict={"fontsize": 14, "fontweight": "bold"}
 )
 
 plt.tight_layout()
-plt.savefig("test_files.png")
-plt.show()
+plt.savefig("test_files.pdf", format="pdf", bbox_inches="tight")

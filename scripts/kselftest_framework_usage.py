@@ -9,7 +9,7 @@ data = data[data["Target"] != "Total"]
 usage = "Kselftest Framework Usage (%)"
 title_percentage = "Kselftest Framework Usage (%)"
 title_count = "Kselftest Framework Usage Counts"
-save_path = "kselftest.png"
+save_path = "kselftest.pdf"
 if sys.argv[1] == "kselftest":
     data[usage] = (
         data["C Files with kselftest.h"] / data["C Files with main/_start"] * 100
@@ -18,7 +18,7 @@ elif sys.argv[1] == "harness":
     usage = "Kselftest Harness Usage (%)"
     title_percentage = "Kselftest Harness Usage (%)"
     title_count = "Kselftest Harness Usage Counts"
-    save_path = "harness.png"
+    save_path = "harness.pdf"
     data[usage] = (
         data["C Files with kselftest_harness.h"]
         / data["C Files with main/_start"]
@@ -87,5 +87,5 @@ for bar in bars:
     )
 
 plt.tight_layout()
-plt.savefig(save_path, bbox_inches="tight")
+plt.savefig(save_path, format="pdf", bbox_inches="tight")
 plt.show()
