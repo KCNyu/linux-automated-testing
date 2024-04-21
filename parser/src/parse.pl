@@ -58,10 +58,10 @@ sub process_line {
         $test = process_test( $test, $testdir, $number );
         my $result = process_result( $not, $skip );
         if ( $result eq "fail" or $result eq "skip" ) {
-            if ($content =~ /(TAP version.*)/s) {
+            if ( $content =~ /(TAP version.*)/s ) {
                 $reason = $1;
             }
-            else{
+            else {
                 $reason = $content;
             }
             if (@sub_test_array) {
@@ -86,10 +86,10 @@ sub process_line {
         my $test   = process_sub_test_name( $line, $testdir, $content );
 
         if ( $result ne "pass" ) {
-            if ($content =~ /(TAP version.*)/s) {
+            if ( $content =~ /(TAP version.*)/s ) {
                 $reason = $1;
             }
-            else{
+            else {
                 $reason = $content;
             }
             push @sub_test_array, $test;
@@ -197,17 +197,24 @@ sub print_result {
     # Return early if $test contains "1.global_main_test"
     return if index( $test, "1.global_main_test" ) != -1;
 
-    foreach my $entry (@$results) {
-        if ( $entry->{"test"} eq $test ) {
-            $result_hash{"test"} .= ".new";
-            last;
-        }
-    }
-
     push @$results, \%result_hash;
 }
 
+sub make_unique {
+    my %namecounts;
+    for my $r (@$results) {
+        my $name = $r->{"test"};
+        $namecounts{$name} =
+          ( exists $namecounts{$name} ? $namecounts{$name} : 0 ) + 1;
+        if ( $namecounts{$name} > 1 ) {
+            $r->{"test"} .= "_dup$namecounts{$name}";
+        }
+    }
+}
+
 sub analyze_result {
+    make_unique();
+
     my $pre_name = @$results[0]->{"test"};
     $pre_name =~ s/=[[:digit:]]//;
 
