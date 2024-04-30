@@ -17,7 +17,8 @@ class TransformerFilePath:
         self.coccinelle_kselftest_header_path = "./kselftest/0_kselftest_header.cocci"
         self.coccinelle_kselftest_main_path = "./kselftest/1_kselftest_main.cocci"
         self.coccinelle_kselftest_print_path = "./kselftest/2_kselftest_print.cocci"
-        self.coccinelle_kselftest_if_path = "./kselftest/3_kselftest_if.cocci"
+        self.coccinelle_kselftest_if_path_1 = "./kselftest/3_kselftest_if_1.cocci"
+        self.coccinelle_kselftest_if_path_2 = "./kselftest/3_kselftest_if_2.cocci"
         self.coccinelle_kselftest_metadata_path = (
             "./kselftest/4_kselftest_metadata.cocci"
         )
@@ -271,7 +272,8 @@ class TransformerIMPL:
     def __reset_assert_expression(
         self, path: str, in_place=True, output_file=None
     ) -> None:
-        CoccinelleRunner.run(path, self.file_path.coccinelle_kselftest_if_path)
+        CoccinelleRunner.run(path, self.file_path.coccinelle_kselftest_if_path_1)
+        CoccinelleRunner.run(path, self.file_path.coccinelle_kselftest_if_path_2)
         self.__update_assert_expression(path)
 
     def __reset_exit_expression(
