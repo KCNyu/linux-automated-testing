@@ -27,7 +27,8 @@ jobs:
             timers,
             filesystems,
             efivarfs,
-            seccomp
+            seccomp,
+            x86
           ]
 
     steps:
