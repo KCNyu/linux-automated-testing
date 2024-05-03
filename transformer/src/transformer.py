@@ -179,15 +179,18 @@ class TransformerIMPL:
         new_lines = []
         under_test = False
         regex = r'printf\("((?:[^"\\]|\\.)*?)(\\n)?"(?:,\s*([^;]*))?\);'
+        regex_ksft = r'ksft_print_msg\("((?:[^"\\]|\\.)*?)(\\n)?"(?:,\s*([^;]*))?\);'
 
         for line in lines:
             if "TEST(" in line.strip():
                 under_test = True
             else:
-                if line.strip().startswith("printf"):
+                if line.strip().startswith("printf") or line.strip().startswith("ksft_print_msg"):
                     if under_test:
                         replacement_function = "TH_LOG"
                         line = re.sub(regex, replacement, line)
+                        if line == line:
+                            line = re.sub(regex_ksft, replacement, line)
                     else:
                         replacement_function = "ksft_print_msg"
                         line = line.replace("printf", replacement_function)
