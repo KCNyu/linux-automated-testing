@@ -37,7 +37,7 @@ usage_percentages = usage_percentages.reindex(labels)
 usage_counts = data["Usage Group"].value_counts(normalize=False)
 usage_counts = usage_counts.reindex(labels)
 
-fig, axs = plt.subplots(1, 2, figsize=(16, 8))
+fig, axs = plt.subplots(1, 2, figsize=(12, 5))
 
 
 def custom_autopct(pct):
@@ -53,13 +53,17 @@ patches, texts, autotexts = axs[1].pie(
 )
 axs[1].set_title(title_percentage, fontsize=16, fontweight="bold")
 
-axs[0].legend(
+legend = axs[0].legend(
     patches,
     labels,
     title="Usage framework\nwithin subsystem",
     loc="upper right",
     bbox_to_anchor=(0.97, 0.97),
 )
+
+for text in legend.get_texts():
+    text.set_fontweight("bold")
+    text.set_fontsize(14)
 
 for text in texts:
     text.set_fontsize(14)

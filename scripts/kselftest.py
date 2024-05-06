@@ -22,7 +22,7 @@ counts = [
 ]
 colors = ["#ACB2BC", "#344964", "#B1D9E5", "#475EA5"]
 
-fig, axs = plt.subplots(1, 2, figsize=(14, 7))
+fig, axs = plt.subplots(1, 2, figsize=(8, 4))
 
 for i, (category, count) in enumerate(zip(categories, counts)):
     bar = axs[0].bar(category, count, color=colors[i], label=category)
@@ -46,7 +46,10 @@ axs[0].tick_params(axis="x", labelsize=10)
 
 axs[0].set_xticklabels([])
 
-axs[0].legend(loc="upper right", title="Categories")
+legend = axs[0].legend(loc="upper right", title="Categories")
+for text in legend.get_texts():
+    text.set_fontweight("bold")
+    text.set_fontsize(7)
 
 percentages = [count / counts[0] * 100 for count in counts[1:3]]
 percentages.append(100 - sum(percentages))
@@ -77,3 +80,4 @@ axs[1].set_title(
 
 plt.tight_layout()
 plt.savefig("test_files.pdf", format="pdf", bbox_inches="tight")
+plt.show()
